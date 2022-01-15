@@ -5,7 +5,7 @@ namespace Core.Managers.LocalizationManager
 {
     public interface ILocalizationManager
     {
-        event Action OnLocalizationChanged;
+        event Action LocalizationChanged;
         LanguageInfo CurrentLanguage { get; }
 
         string GetText(string key);

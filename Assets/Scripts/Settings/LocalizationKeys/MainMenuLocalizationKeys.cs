@@ -11,7 +11,7 @@ namespace Settings.LocalizationKeys
         public const string UgolkiRule2 = "ugolki_rule_2";
         public const string UgolkiRule3 = "ugolki_rule_3";
         
-        public static IReadOnlyDictionary<string, string> UgolkiRulesMap = new Dictionary<string, string>
+        public static readonly IReadOnlyDictionary<string, string> UgolkiRulesMap = new Dictionary<string, string>
         {
             {UgolkiRules.Rule1, UgolkiRule1},
             {UgolkiRules.Rule2, UgolkiRule2},

@@ -24,6 +24,11 @@ namespace ViewControllers.MainMenu.UgolkiRulesListItem
             this.View.SetSelected(_isSelected);
         }
 
+        public void OnLocalizationChanged()
+        {
+            UpdateController();
+        }
+
         protected override void OnSetModel()
         {
             UpdateController();

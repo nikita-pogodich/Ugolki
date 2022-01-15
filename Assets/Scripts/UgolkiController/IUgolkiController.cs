@@ -1,12 +1,10 @@
 using System.Collections.Generic;
-using Core.Managers.Logger;
 
 namespace UgolkiController
 {
     public interface IUgolkiController
     {
         BoardCellType[,] Board { get; }
-        void Initialize(IUgolkiExternalViewController externalViewController, ILogger logger);
         List<string> GetRules();
         void SetRule(string rule);
         void StartGame();

@@ -38,11 +38,18 @@ namespace ViewControllers.MainMenu
             _ugolkiRules = _ugolkiController.GetRules();
             _ugolkiRulesList.SetModel(_ugolkiRules);
             _ugolkiRulesList.SetView(this.View.UgolkiRulesList);
+
+            _ugolkiRulesList.RuleSelected += OnRuleSelected;
         }
 
         protected override void OnViewRemoved()
         {
             this.View.StartGame += OnStartGame;
+        }
+
+        private void OnRuleSelected(string rule)
+        {
+            _ugolkiController.SetRule(rule);
         }
 
         private void OnStartGame()

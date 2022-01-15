@@ -14,6 +14,8 @@ namespace ViewControllers.MainMenu.UgolkiRulesList
         private IPoolingManager _poolingManager;
         private ILocalizationManager _localizationManager;
 
+        private const int _defaultSelectedRule = 0;
+
         private List<UgolkiRulesListItemViewController> _ugolkiRulesList =
             new List<UgolkiRulesListItemViewController>();
 
@@ -23,6 +25,8 @@ namespace ViewControllers.MainMenu.UgolkiRulesList
         {
             _poolingManager = poolingManager;
             _localizationManager = localizationManager;
+
+            _localizationManager.LocalizationChanged += OnLocalizationChanged;
         }
 
         protected override void OnSetModel()
@@ -51,10 +55,13 @@ namespace ViewControllers.MainMenu.UgolkiRulesList
                 rulesListItem.SetModel(this.Model[i]);
                 rulesListItem.SetView(rulesListItemView);
                 rulesListItem.Selected += SelectRule;
+                rulesListItem.SetSelected(false);
                 _ugolkiRulesList.Add(rulesListItem);
 
                 this.View.AddItem(rulesListItemView.gameObject);
             }
+
+            _ugolkiRulesList[_defaultSelectedRule].SetSelected(true);
         }
 
         protected override void OnDispose()
@@ -63,6 +70,8 @@ namespace ViewControllers.MainMenu.UgolkiRulesList
             {
                 _ugolkiRulesList[i].Selected -= SelectRule;
             }
+
+            _localizationManager.LocalizationChanged -= OnLocalizationChanged;
         }
 
         private void SelectRule(UgolkiRulesListItemViewController ugolkiRulesListItem)
@@ -79,6 +88,14 @@ namespace ViewControllers.MainMenu.UgolkiRulesList
 
             ugolkiRulesListItem.SetSelected(true);
             OnRuleSelected(ugolkiRulesListItem.Model);
+        }
+
+        private void OnLocalizationChanged()
+        {
+            for (int i = 0; i < _ugolkiRulesList.Count; i++)
+            {
+                _ugolkiRulesList[i].OnLocalizationChanged();
+            }
         }
 
         private void OnRuleSelected(string rule)

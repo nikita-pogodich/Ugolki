@@ -9,7 +9,7 @@ namespace Core.Managers.LocalizationManager
         private List<LanguageInfo> _languageInfos;
         private Dictionary<string, string> _languageTerms;
 
-        public event Action OnLocalizationChanged;
+        public event Action LocalizationChanged;
         public LanguageInfo CurrentLanguage => _currentLanguage;
 
         public LocalizationManager()
@@ -40,7 +40,7 @@ namespace Core.Managers.LocalizationManager
 
         public void SetLocale(string key)
         {
-            OnLocalizationChanged?.Invoke();
+            LocalizationChanged?.Invoke();
         }
 
         public List<LanguageInfo> GetLocales()

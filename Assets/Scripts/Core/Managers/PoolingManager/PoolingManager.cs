@@ -1,10 +1,14 @@
 using System.Collections.Generic;
+using Core.Managers.Logger;
 using UnityEngine;
 
 namespace Core.Managers.PoolingManager
 {
-    public class PoolingManager : IPoolingManager
+    public class PoolingManager : MonoBehaviour, IPoolingManager
     {
+        [SerializeField]
+        private Transform _poolRoot;
+
         private Dictionary<string, Stack<GameObject>> _pool = new Dictionary<string, Stack<GameObject>>();
 
         public void PrepareResource(string resourceKey, int poolSize)
@@ -51,9 +55,21 @@ namespace Core.Managers.PoolingManager
             }
         }
 
-        private static GameObject InstantiateGameObject(string resourceKey)
+        private GameObject InstantiateGameObject(string resourceKey)
         {
-            return Object.Instantiate(Resources.Load(resourceKey, typeof(GameObject))) as GameObject;
+            Object resource = Resources.Load(resourceKey, typeof(GameObject));
+            if (resource == null)
+            {
+                LogManager.LogError($"Resource not found: {resourceKey}");
+                return null;
+            }
+
+            GameObject instantiate = Instantiate(
+                original: resource,
+                parent: _poolRoot,
+                instantiateInWorldSpace: true) as GameObject;
+
+            return instantiate;
         }
     }
 }
