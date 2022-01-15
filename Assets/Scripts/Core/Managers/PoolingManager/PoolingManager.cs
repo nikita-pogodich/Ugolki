@@ -37,6 +37,20 @@ namespace Core.Managers.PoolingManager
             return result;
         }
 
+        public void ReleaseResource(string resourceKey, GameObject resource)
+        {
+            if (_pool.ContainsKey(resourceKey) == true)
+            {
+                _pool[resourceKey].Push(resource);
+            }
+            else
+            {
+                Stack<GameObject> pool = new Stack<GameObject>();
+                pool.Push(resource);
+                _pool.Add(resourceKey, pool);
+            }
+        }
+
         private static GameObject InstantiateGameObject(string resourceKey)
         {
             return Object.Instantiate(Resources.Load(resourceKey, typeof(GameObject))) as GameObject;

@@ -6,13 +6,7 @@ namespace Core.Managers.ViewManager
 {
     public class ViewManager : IViewManager
     {
-        private ILogger _logger;
         private Dictionary<string, IViewController> _registeredViews = new Dictionary<string, IViewController>();
-
-        public ViewManager(ILogger logger)
-        {
-            _logger = new UnityLogger();
-        }
 
         public void RegisterView(string viewName, IViewController viewController)
         {
@@ -22,14 +16,14 @@ namespace Core.Managers.ViewManager
             }
         }
 
-        public void ShowView(string viewName)
+        public void ShowView(string viewName, ViewModel model)
         {
             if (_registeredViews.ContainsKey(viewName) == true)
             {
                 IViewController viewToOpen = _registeredViews[viewName];
                 if (viewToOpen.IsShown == true)
                 {
-                    _logger.LogWarning($"View already shown: {viewName}");
+                    LogManager.LogWarning($"View already shown: {viewName}");
                     return;
                 }
 
@@ -42,10 +36,11 @@ namespace Core.Managers.ViewManager
                 }
 
                 viewToOpen.SetShown(true);
+                viewToOpen.SetModel(model);
             }
             else
             {
-                _logger.LogWarning($"View not registered: {viewName}");
+                LogManager.LogWarning($"View not registered: {viewName}");
             }
         }
 
@@ -56,7 +51,7 @@ namespace Core.Managers.ViewManager
                 IViewController viewToOpen = _registeredViews[viewName];
                 if (viewToOpen.IsShown == false)
                 {
-                    _logger.LogWarning($"View already hidden: {viewName}");
+                    LogManager.LogWarning($"View already hidden: {viewName}");
                     return;
                 }
 
@@ -64,7 +59,7 @@ namespace Core.Managers.ViewManager
             }
             else
             {
-                _logger.LogWarning($"View not registered: {viewName}");
+                LogManager.LogWarning($"View not registered: {viewName}");
             }
         }
     }

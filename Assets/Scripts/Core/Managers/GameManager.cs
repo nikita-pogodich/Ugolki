@@ -14,8 +14,10 @@ namespace Core.Managers
         private void Start()
         {
             _logger = new UnityLogger();
+            LogManager.RegisterLogger(_logger);
+
             _poolingManager = new PoolingManager.PoolingManager();
-            _viewManager = new ViewManager.ViewManager(_logger);
+            _viewManager = new ViewManager.ViewManager();
         }
     }
 }

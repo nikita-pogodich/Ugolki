@@ -4,8 +4,6 @@ namespace Core.Managers.Logger
 {
     class UnityLogger : ILogger
     {
-        #region ILogger interface implementation
-
         public void LogDebug(string message)
         {
             Debug.Log(message);
@@ -25,7 +23,5 @@ namespace Core.Managers.Logger
         {
             Debug.Assert(condition, message);
         }
-
-        #endregion ILogger interface implementation
     }
 }

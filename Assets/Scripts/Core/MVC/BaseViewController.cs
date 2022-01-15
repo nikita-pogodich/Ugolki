@@ -2,9 +2,8 @@ using UnityEngine;
 
 namespace Core.MVC
 {
-    public abstract class BaseViewController<TView, TModel> : IViewController
+    public abstract class BaseViewController<TView, TModel> : IViewController<TModel>
         where TView : MonoBehaviour
-        where TModel : ViewModel
     {
         private TView _view;
         private TModel _model;
@@ -12,7 +11,8 @@ namespace Core.MVC
         private bool _hasModel;
         private bool _isShown;
 
-        public abstract ViewType ViewType { get; }
+        public virtual ViewType ViewType => ViewType.Simple;
+        public virtual string Name => string.Empty;
 
         public TView View => _view;
         public TModel Model => _model;

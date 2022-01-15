@@ -6,5 +6,6 @@ namespace Core.Managers.PoolingManager
     {
         void PrepareResource(string resourceKey, int poolSize);
         GameObject GetResource(string resourceKey);
+        void ReleaseResource(string resourceKey, GameObject resource);
     }
 }
