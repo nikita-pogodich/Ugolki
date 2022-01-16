@@ -17,6 +17,9 @@ namespace ViewControllers.UgolkiGame
         private TextMeshProUGUI _blackMovesCount;
 
         [SerializeField]
+        private TextMeshProUGUI _currentPlayer;
+
+        [SerializeField]
         private CanvasGroup _visible;
 
         public event Action Back;
@@ -39,6 +42,11 @@ namespace ViewControllers.UgolkiGame
         public void SetBlackMovesCount(string count)
         {
             _blackMovesCount.text = count;
+        }
+
+        public void ChangeCurrentPlayer(string currentPlayer)
+        {
+            _currentPlayer.text = currentPlayer;
         }
 
         public void SetShown(bool isShown)

@@ -164,6 +164,12 @@ namespace UgolkiController
             _isGameStarted = true;
         }
 
+        public void ShowWinner(Player? winner)
+        {
+            _isGameStarted = false;
+            LogManager.LogDebug($"Winner: {winner.Value.ToString()}");
+        }
+
         private void SetCellHighlightShown(bool isShown)
         {
             _cellHighlight.gameObject.SetActive(isShown);

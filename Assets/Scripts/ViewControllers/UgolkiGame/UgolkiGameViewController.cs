@@ -30,12 +30,14 @@ namespace ViewControllers.UgolkiGame
         protected override void OnViewAdded()
         {
             _ugolkiController.MoveInfoChanged += OnMoveInfoChanged;
+            _ugolkiController.PlayerChanged += OnCurrentPlayerChanged;
             this.View.Back += OnBack;
         }
 
         protected override void OnViewRemoved()
         {
             _ugolkiController.MoveInfoChanged -= OnMoveInfoChanged;
+            _ugolkiController.PlayerChanged -= OnCurrentPlayerChanged;
             this.View.Back -= OnBack;
         }
 
@@ -56,11 +58,31 @@ namespace ViewControllers.UgolkiGame
         private string GetMovesText(int count, string localizationKey)
         {
             string movesCountText = _localizationManager.GetText(
-                localizationKey,
-                UgolkiGameLocalizationKeys.MovesCountValue,
-                count.ToString());
+                key: localizationKey,
+                keyToReplace: UgolkiGameLocalizationKeys.MovesCountValue,
+                valueToReplace: count.ToString());
 
             return movesCountText;
+        }
+
+        private void OnCurrentPlayerChanged(Player player)
+        {
+            string result;
+            if (player == Player.White)
+            {
+                result = UgolkiGameLocalizationKeys.WhitePlayer;
+            }
+            else
+            {
+                result = UgolkiGameLocalizationKeys.BlackPlayer;
+            }
+
+            string currentPlayerText = _localizationManager.GetText(
+                key: UgolkiGameLocalizationKeys.CurrentPlayer,
+                keyToReplace: UgolkiGameLocalizationKeys.CurrentPlayerValue,
+                valueToReplace: result);
+
+            this.View.ChangeCurrentPlayer(currentPlayerText);
         }
 
         private void OnBack()

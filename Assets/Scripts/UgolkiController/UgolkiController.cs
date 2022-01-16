@@ -6,6 +6,8 @@ namespace UgolkiController
     public class UgolkiController : IUgolkiController
     {
         private const int _boardSize = 8;
+        private const int _whiteHousePosition = 2;
+        private const int _blackHousePosition = 5;
 
         private IUgolkiExternalView _ugolkiExternalView;
         private List<string> _rules;
@@ -16,6 +18,9 @@ namespace UgolkiController
         private Coord _selectedPiecePosition;
         private bool _hasSelectedPiece;
         private List<Coord> _currentAvailableMoves = new List<Coord>();
+
+        public event Action<Dictionary<Player, int>> MoveInfoChanged;
+        public event Action<Player> PlayerChanged;
 
         public UgolkiController(IUgolkiExternalView ugolkiExternalView)
         {
@@ -28,9 +33,6 @@ namespace UgolkiController
                 UgolkiRules.Rule3
             };
         }
-
-        public event Action<Dictionary<Player, int>> MoveInfoChanged;
-        public event Action<Player> PlayerChanged;
 
         public List<string> GetRules()
         {
@@ -45,15 +47,39 @@ namespace UgolkiController
         public void StartGame()
         {
             ResetBoard();
+            ResetMovesInfo();
+            ResetPlayer();
 
-            _movesInfo.Clear();
-            _movesInfo.Add(Player.White, 0);
-            _movesInfo.Add(Player.Black, 0);
-
-            OnMoveInfoChanged(_movesInfo);
-
-            _currentPlayer = Player.White;
             _ugolkiExternalView.StartGame(_board, _boardSize);
+        }
+
+        private void ResetPlayer()
+        {
+            _currentPlayer = Player.White;
+            OnPlayerChanged();
+        }
+
+        private void ResetMovesInfo()
+        {
+            if (_movesInfo.ContainsKey(Player.White) == false)
+            {
+                _movesInfo.Add(Player.White, 0);
+            }
+            else
+            {
+                _movesInfo[Player.White] = 0;
+            }
+
+            if (_movesInfo.ContainsKey(Player.Black) == false)
+            {
+                _movesInfo.Add(Player.Black, 0);
+            }
+            else
+            {
+                _movesInfo[Player.Black] = 0;
+            }
+
+            OnMoveInfoChanged();
         }
 
         public void EndGame()
@@ -62,9 +88,37 @@ namespace UgolkiController
             _ugolkiExternalView.EndGame(_board);
         }
 
-        public Player CheckWinner()
+        public Player? CheckWinner()
         {
-            throw new System.NotImplementedException();
+            int black = 0, white = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (i >= _blackHousePosition && j >= _blackHousePosition && _board[i, j] == BoardCellType.White)
+                    {
+                        white += 1;
+                    }
+                    else if (i <= _whiteHousePosition &&
+                             j <= _whiteHousePosition &&
+                             _board[i, j] == BoardCellType.Black)
+                    {
+                        black += 1;
+                    }
+                }
+            }
+
+            if (black == 9)
+            {
+                return Player.Black;
+            }
+
+            if (white == 9)
+            {
+                return Player.White;
+            }
+
+            return null;
         }
 
         public void TrySelectCell(Coord cell)
@@ -103,9 +157,9 @@ namespace UgolkiController
             }
         }
 
-        private void OnMoveInfoChanged(Dictionary<Player, int> movesInfo)
+        private void OnMoveInfoChanged()
         {
-            MoveInfoChanged?.Invoke(movesInfo);
+            MoveInfoChanged?.Invoke(_movesInfo);
         }
 
         private void ResetBoard()
@@ -114,11 +168,11 @@ namespace UgolkiController
             {
                 for (int j = 0; j < _boardSize; j++)
                 {
-                    if (i <= 2 && j <= 2)
+                    if (i <= _whiteHousePosition && j <= _whiteHousePosition)
                     {
                         _board[i, j] = BoardCellType.White;
                     }
-                    else if (i >= 5 && j >= 5)
+                    else if (i >= _blackHousePosition && j >= _blackHousePosition)
                     {
                         _board[i, j] = BoardCellType.Black;
                     }
@@ -230,11 +284,14 @@ namespace UgolkiController
             Move move = new Move {IsJump = false, From = _selectedPiecePosition, To = cell};
             List<Move> moves = new List<Move> {move};
 
-            _ugolkiExternalView.MovePiece(moves, EndMove);
+            _ugolkiExternalView.MovePiece(moves, OnMoveComplete);
         }
 
-        private void EndMove()
+        private void OnMoveComplete()
         {
+            _movesInfo[_currentPlayer]++;
+            OnMoveInfoChanged();
+
             if (_currentPlayer == Player.White)
             {
                 _currentPlayer = Player.Black;
@@ -244,6 +301,17 @@ namespace UgolkiController
                 _currentPlayer = Player.White;
             }
 
+            OnPlayerChanged();
+
+            Player? checkWinner = CheckWinner();
+            if (checkWinner != null)
+            {
+                _ugolkiExternalView.ShowWinner(checkWinner);
+            }
+        }
+
+        private void OnPlayerChanged()
+        {
             PlayerChanged?.Invoke(_currentPlayer);
         }
     }

@@ -6,6 +6,7 @@ namespace UgolkiController
     public interface IUgolkiExternalView
     {
         void StartGame(BoardCellType[,] board, int boardSize);
+        void ShowWinner(Player? winner);
         void EndGame(BoardCellType[,] board);
         void SelectPiece(Coord coord, List<Coord> availableMoves);
         void DeselectPiece(Coord coord);
