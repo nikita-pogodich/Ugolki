@@ -36,8 +36,8 @@ namespace Core.Managers
             LogManager.RegisterLogger(_logger);
             _localizationManager = new LocalizationManager.LocalizationManager();
             _viewManager = new ViewManager.ViewManager();
-            _ugolkiBoard.Initialize(_poolingManager);
             _ugolkiController = new UgolkiController.UgolkiController(_ugolkiBoard);
+            _ugolkiBoard.Initialize(_poolingManager, _ugolkiController);
 
             RegisterViews();
             ShowStartView();

@@ -6,8 +6,9 @@ namespace UgolkiController
     {
         void StartGame(BoardCellType[,] board, int boardSize);
         void EndGame(BoardCellType[,] board);
-        void SelectPiece(Coord coord);
+        void SelectPiece(Coord coord, List<Coord> availableMoves);
         void DeselectPiece(Coord coord);
         void MovePiece(List<Move> path);
+        void ShowMessage(string message);
     }
 }

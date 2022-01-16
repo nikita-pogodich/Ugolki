@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Core.Managers.Logger;
 using Core.Managers.PoolingManager;
 using Settings;
 using UnityEngine;
@@ -11,57 +12,78 @@ namespace UgolkiController
         private Transform _piecesRoot;
 
         [SerializeField]
+        private Transform _cellHighlight;
+
+        [SerializeField]
+        private Camera _camera;
+
+        [SerializeField]
+        private BoxCollider _boardCollider;
+
+        [SerializeField]
         private float _cellSize;
 
+        [SerializeField]
+        private string _boardTag;
+
         private IPoolingManager _poolingManager;
-
+        private IUgolkiController _ugolkiController;
         private List<List<GameObject>> _board = new List<List<GameObject>>();
+        private int _boardSize;
+        private bool _isGameStarted;
 
-        public void Initialize(IPoolingManager poolingManager)
+        public void Initialize(IPoolingManager poolingManager, IUgolkiController ugolkiController)
         {
             _poolingManager = poolingManager;
+            _ugolkiController = ugolkiController;
         }
 
-        void IUgolkiExternalView.StartGame(BoardCellType[,] board, int boardSize)
+        private void Update()
         {
-            ClearBoard();
+            ProcessInput();
+        }
 
-            for (int i = 0; i < boardSize; i++)
+        private void ProcessInput()
+        {
+            if (_isGameStarted == false)
             {
-                _board.Add(new List<GameObject>());
-                for (int j = 0; j < boardSize; j++)
+                return;
+            }
+
+            Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
+
+            if (Input.GetMouseButtonDown(0) == true)
+            {
+                if (Physics.Raycast(ray, out RaycastHit hit))
                 {
-                    if (board[i, j] == BoardCellType.Empty)
+                    Transform objectHit = hit.transform;
+                    if (objectHit.CompareTag(_boardTag) == true)
                     {
-                        _board[i].Add(null);
-                    }
-                    else if (board[i, j] == BoardCellType.White)
-                    {
-                        GameObject piece = CreatePiece(i, j, BoardCellType.White);
-                        _board[i].Add(piece);
-                    }
-                    else
-                    {
-                        GameObject piece = CreatePiece(i, j, BoardCellType.Black);
-                        _board[i].Add(piece);
+                        Vector3 position = SnapToGrid(hit.point);
+                        Vector3 localPoint = _piecesRoot.InverseTransformPoint(position);
+                        _ugolkiController.TrySelectPiece(new Coord((int)localPoint.x, (int)localPoint.z));
                     }
                 }
             }
         }
 
-        void IUgolkiExternalView.EndGame(BoardCellType[,] board)
+        private Vector3 SnapToGrid(Vector3 pos)
         {
-            ClearBoard();
+            if (_boardSize == 0)
+            {
+                return Vector3.zero;
+            }
+
+            float gridSnap = _boardCollider.size.x / _boardSize;
+            float cellCenter = gridSnap / 2.0f;
+
+            Vector3 snapHits = new Vector3(
+                Mathf.Round((pos.x - cellCenter) / gridSnap) * gridSnap + cellCenter,
+                pos.y,
+                Mathf.Round((pos.z - cellCenter) / gridSnap) * gridSnap + cellCenter);
+
+            return snapHits;
         }
-
-        void IUgolkiExternalView.SelectPiece(Coord coord)
-        { }
-
-        void IUgolkiExternalView.DeselectPiece(Coord coord)
-        { }
-
-        void IUgolkiExternalView.MovePiece(List<Move> path)
-        { }
 
         private void ClearBoard()
         {
@@ -100,10 +122,6 @@ namespace UgolkiController
             }
 
             GameObject resource = _poolingManager.GetResource(resultResourceName);
-            
-            //TODO remove this when PieceInfo will be created
-            resource.name = resource.name.Replace("(Clone)", "");
-
             Transform piece = resource.transform;
             piece.SetParent(_piecesRoot);
             piece.localPosition = new Vector3(_cellSize * row, 0.0f, _cellSize * column);
@@ -111,6 +129,58 @@ namespace UgolkiController
             piece.localEulerAngles = Vector3.zero;
 
             return resource;
+        }
+
+        void IUgolkiExternalView.StartGame(BoardCellType[,] board, int boardSize)
+        {
+            _boardSize = boardSize;
+            ClearBoard();
+
+            for (int i = 0; i < boardSize; i++)
+            {
+                _board.Add(new List<GameObject>());
+                for (int j = 0; j < boardSize; j++)
+                {
+                    if (board[i, j] == BoardCellType.Empty)
+                    {
+                        _board[i].Add(null);
+                    }
+                    else if (board[i, j] == BoardCellType.White)
+                    {
+                        GameObject piece = CreatePiece(i, j, BoardCellType.White);
+                        _board[i].Add(piece);
+                    }
+                    else
+                    {
+                        GameObject piece = CreatePiece(i, j, BoardCellType.Black);
+                        _board[i].Add(piece);
+                    }
+                }
+            }
+
+            _isGameStarted = true;
+        }
+
+        void IUgolkiExternalView.EndGame(BoardCellType[,] board)
+        {
+            ClearBoard();
+            _isGameStarted = false;
+        }
+
+        void IUgolkiExternalView.SelectPiece(Coord coord, List<Coord> availableMoves)
+        {
+            _cellHighlight.localPosition = new Vector3(coord.Row, 0.0f, coord.Column);
+        }
+
+        void IUgolkiExternalView.DeselectPiece(Coord coord)
+        { }
+
+        void IUgolkiExternalView.MovePiece(List<Move> path)
+        { }
+
+        void IUgolkiExternalView.ShowMessage(string message)
+        {
+            LogManager.LogDebug(message);
         }
     }
 }

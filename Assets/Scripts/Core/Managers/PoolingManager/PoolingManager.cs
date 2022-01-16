@@ -66,12 +66,17 @@ namespace Core.Managers.PoolingManager
                 return null;
             }
 
-            GameObject instantiate = Instantiate(
+            GameObject result = Instantiate(
                 original: resource,
                 parent: _poolRoot,
                 instantiateInWorldSpace: true) as GameObject;
 
-            return instantiate;
+            if (result != null)
+            {
+                result.name = resource.name;
+            }
+
+            return result;
         }
     }
 }
