@@ -34,17 +34,17 @@ namespace ViewControllers.MainMenu
         protected override void OnViewAdded()
         {
             this.View.StartGame += OnStartGame;
+            _ugolkiRulesList.RuleSelected += OnRuleSelected;
 
             _ugolkiRules = _ugolkiController.GetRules();
             _ugolkiRulesList.SetModel(_ugolkiRules);
             _ugolkiRulesList.SetView(this.View.UgolkiRulesList);
-
-            _ugolkiRulesList.RuleSelected += OnRuleSelected;
         }
 
         protected override void OnViewRemoved()
         {
-            this.View.StartGame += OnStartGame;
+            this.View.StartGame -= OnStartGame;
+            _ugolkiRulesList.RuleSelected -= OnRuleSelected;
         }
 
         protected override void OnSetShown(bool isShown)

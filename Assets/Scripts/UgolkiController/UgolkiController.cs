@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UgolkiController.UgolkiRules;
 
 namespace UgolkiController
 {
@@ -14,6 +15,7 @@ namespace UgolkiController
         private string _currentRule;
         private BoardCellType[,] _board = new BoardCellType[_boardSize, _boardSize];
         private Dictionary<Player, int> _movesInfo = new Dictionary<Player, int>();
+        private Dictionary<string, BaseUgolkiRule> _availableMovesByRule = new Dictionary<string, BaseUgolkiRule>();
         private Player _currentPlayer;
         private Coord _selectedPiecePosition;
         private bool _hasSelectedPiece;
@@ -22,16 +24,24 @@ namespace UgolkiController
         public event Action<Dictionary<Player, int>> MoveInfoChanged;
         public event Action<Player> PlayerChanged;
 
+        private CannotJumpRule _cannotJumpRule = new CannotJumpRule();
+        private CanJumpOrthogonallyRule _canJumpOrthogonallyRule = new CanJumpOrthogonallyRule();
+        private CanJumpDiagonallyRule _canJumpDiagonallyRule = new CanJumpDiagonallyRule();
+
         public UgolkiController(IUgolkiExternalView ugolkiExternalView)
         {
             _ugolkiExternalView = ugolkiExternalView;
 
             _rules = new List<string>
             {
-                UgolkiRules.Rule1,
-                UgolkiRules.Rule2,
-                UgolkiRules.Rule3
+                UgolkiRulesList.Rule1,
+                UgolkiRulesList.Rule2,
+                UgolkiRulesList.Rule3
             };
+
+            _availableMovesByRule.Add(UgolkiRulesList.Rule1, _canJumpDiagonallyRule);
+            _availableMovesByRule.Add(UgolkiRulesList.Rule2, _canJumpOrthogonallyRule);
+            _availableMovesByRule.Add(UgolkiRulesList.Rule3, _cannotJumpRule);
         }
 
         public List<string> GetRules()
@@ -190,69 +200,8 @@ namespace UgolkiController
             List<Coord> canJump = new List<Coord>();
             canJump.Add(from);
             toCheck.Enqueue(from);
-            Coord currentFrom;
-            Coord currentTo;
-            Coord currentTo2;
 
-            while (toCheck.Count > 0)
-            {
-                currentFrom = toCheck.Dequeue();
-
-                for (int i = -1; i <= 1; i++)
-                {
-                    for (int j = -1; j <= 1; j++)
-                    {
-                        if (i == 0 && j == 0)
-                        {
-                            continue;
-                        }
-
-                        try
-                        {
-                            currentTo = new Coord(currentFrom.Row + i, currentFrom.Column + j);
-                            currentTo2 = new Coord(currentFrom.Row + i * 2, currentFrom.Column + j * 2);
-                        }
-                        catch (OutOfBoardException)
-                        {
-                            continue;
-                        }
-
-                        if (_board[currentTo.Row, currentTo.Column] != BoardCellType.Empty &&
-                            _board[currentTo2.Row, currentTo2.Column] == BoardCellType.Empty &&
-                            canJump.Contains(currentTo2) == false)
-                        {
-                            toCheck.Enqueue(currentTo2);
-                            canJump.Add(currentTo2);
-                        }
-                    }
-                }
-            }
-
-            for (int i = -1; i <= 1; i++)
-            {
-                for (int j = -1; j <= 1; j++)
-                {
-                    if (i == 0 && j == 0)
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        currentTo = new Coord(from.Row + i, from.Column + j);
-                    }
-                    catch (OutOfBoardException)
-                    {
-                        continue;
-                    }
-
-                    if (_board[currentTo.Row, currentTo.Column] == BoardCellType.Empty &&
-                        canJump.Contains(currentTo) == false)
-                    {
-                        canJump.Add(currentTo);
-                    }
-                }
-            }
+            _availableMovesByRule[_currentRule].TryAddAvailableMoves(_board, from, toCheck, canJump);
 
             canJump.Remove(from);
             return canJump;

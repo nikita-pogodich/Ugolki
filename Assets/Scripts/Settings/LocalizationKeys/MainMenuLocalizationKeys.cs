@@ -1,11 +1,10 @@
 using System.Collections.Generic;
-using UgolkiController;
+using UgolkiController.UgolkiRules;
 
 namespace Settings.LocalizationKeys
 {
     public class MainMenuLocalizationKeys
     {
-        public const string MainMenuGameTitle = "main_menu_game_title";
         public const string StartGameButton = "start_game_button";
         public const string UgolkiRule1 = "ugolki_rule_1";
         public const string UgolkiRule2 = "ugolki_rule_2";
@@ -13,9 +12,9 @@ namespace Settings.LocalizationKeys
         
         public static readonly IReadOnlyDictionary<string, string> UgolkiRulesMap = new Dictionary<string, string>
         {
-            {UgolkiRules.Rule1, UgolkiRule1},
-            {UgolkiRules.Rule2, UgolkiRule2},
-            {UgolkiRules.Rule3, UgolkiRule3}
+            {UgolkiRulesList.Rule1, UgolkiRule1},
+            {UgolkiRulesList.Rule2, UgolkiRule2},
+            {UgolkiRulesList.Rule3, UgolkiRule3}
         };
     }
 }
