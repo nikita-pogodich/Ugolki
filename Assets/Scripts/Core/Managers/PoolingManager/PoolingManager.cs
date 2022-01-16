@@ -53,6 +53,8 @@ namespace Core.Managers.PoolingManager
                 pool.Push(resource);
                 _pool.Add(resourceKey, pool);
             }
+
+            resource.transform.SetParent(_poolRoot);
         }
 
         private GameObject InstantiateGameObject(string resourceKey)

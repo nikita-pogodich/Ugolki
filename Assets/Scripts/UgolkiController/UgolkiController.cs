@@ -1,16 +1,22 @@
+using System;
 using System.Collections.Generic;
 
 namespace UgolkiController
 {
     public class UgolkiController : IUgolkiController
     {
+        private const int _boardSize = 8;
+
+        private IUgolkiExternalView _ugolkiExternalView;
         private List<string> _rules;
         private string _currentRule;
-        
-        public BoardCellType[,] Board { get; }
+        private BoardCellType[,] _board = new BoardCellType[_boardSize, _boardSize];
+        private Dictionary<Player, int> _movesInfo = new Dictionary<Player, int>();
 
-        public UgolkiController()
+        public UgolkiController(IUgolkiExternalView ugolkiExternalView)
         {
+            _ugolkiExternalView = ugolkiExternalView;
+
             _rules = new List<string>
             {
                 UgolkiRules.Rule1,
@@ -18,6 +24,8 @@ namespace UgolkiController
                 UgolkiRules.Rule3
             };
         }
+
+        public event Action<Dictionary<Player, int>> MoveInfoChanged;
 
         public List<string> GetRules()
         {
@@ -31,12 +39,20 @@ namespace UgolkiController
 
         public void StartGame()
         {
-            throw new System.NotImplementedException();
+            ResetBoard();
+            _ugolkiExternalView.StartGame(_board, _boardSize);
+
+            _movesInfo.Clear();
+            _movesInfo.Add(Player.White, 0);
+            _movesInfo.Add(Player.Black, 0);
+
+            OnMoveInfoChanged(_movesInfo);
         }
 
         public void EndGame()
         {
-            throw new System.NotImplementedException();
+            ResetBoard();
+            _ugolkiExternalView.EndGame(_board);
         }
 
         public Player CheckWinner()
@@ -52,6 +68,33 @@ namespace UgolkiController
         public bool TryMovePiece(Coord @from, Coord to, Player player, string errorType)
         {
             throw new System.NotImplementedException();
+        }
+
+        private void OnMoveInfoChanged(Dictionary<Player, int> movesInfo)
+        {
+            MoveInfoChanged?.Invoke(movesInfo);
+        }
+
+        private void ResetBoard()
+        {
+            for (int i = 0; i < _boardSize; i++)
+            {
+                for (int j = 0; j < _boardSize; j++)
+                {
+                    if (i <= 2 && j <= 2)
+                    {
+                        _board[i, j] = BoardCellType.White;
+                    }
+                    else if (i >= 5 && j >= 5)
+                    {
+                        _board[i, j] = BoardCellType.Black;
+                    }
+                    else
+                    {
+                        _board[i, j] = BoardCellType.Empty;
+                    }
+                }
+            }
         }
     }
 }

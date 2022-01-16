@@ -47,6 +47,11 @@ namespace ViewControllers.MainMenu
             this.View.StartGame += OnStartGame;
         }
 
+        protected override void OnSetShown(bool isShown)
+        {
+            this.View.SetShown(isShown);
+        }
+
         private void OnRuleSelected(string rule)
         {
             _ugolkiController.SetRule(rule);
@@ -54,7 +59,8 @@ namespace ViewControllers.MainMenu
 
         private void OnStartGame()
         {
-            //TODO: Start game
+            _ugolkiController.StartGame();
+            _viewManager.ShowView(ViewNamesList.UgolkiGame);
         }
     }
 }

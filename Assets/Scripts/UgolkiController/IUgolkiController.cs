@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 
 namespace UgolkiController
 {
     public interface IUgolkiController
     {
-        BoardCellType[,] Board { get; }
+        event Action<Dictionary<Player, int>> MoveInfoChanged;
         List<string> GetRules();
         void SetRule(string rule);
         void StartGame();
