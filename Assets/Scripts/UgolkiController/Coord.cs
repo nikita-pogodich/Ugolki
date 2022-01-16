@@ -3,9 +3,8 @@ using System;
 namespace UgolkiController
 {
     public class OutOfBoardException : Exception
-    {
-    }
-    
+    { }
+
     public readonly struct Coord
     {
         private readonly int _row;
@@ -16,6 +15,11 @@ namespace UgolkiController
 
         public Coord(int row, int column)
         {
+            if (row < 0 || row > 7 || column < 0 || column > 7)
+            {
+                throw new OutOfBoardException();
+            }
+
             _row = row;
             _column = column;
         }

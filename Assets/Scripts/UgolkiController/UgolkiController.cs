@@ -15,6 +15,7 @@ namespace UgolkiController
         private Player _currentPlayer;
         private Coord _selectedPiecePosition;
         private bool _hasSelectedPiece;
+        private List<Coord> _currentAvailableMoves = new List<Coord>();
 
         public UgolkiController(IUgolkiExternalView ugolkiExternalView)
         {
@@ -29,6 +30,7 @@ namespace UgolkiController
         }
 
         public event Action<Dictionary<Player, int>> MoveInfoChanged;
+        public event Action<Player> PlayerChanged;
 
         public List<string> GetRules()
         {
@@ -65,8 +67,14 @@ namespace UgolkiController
             throw new System.NotImplementedException();
         }
 
-        public void TrySelectPiece(Coord cell)
+        public void TrySelectCell(Coord cell)
         {
+            if (_hasSelectedPiece == false && _board[cell.Row, cell.Column] == BoardCellType.Empty)
+            {
+                _ugolkiExternalView.ShowMessage("select_piece");
+                return;
+            }
+
             if (_hasSelectedPiece == true && _selectedPiecePosition == cell)
             {
                 _hasSelectedPiece = false;
@@ -74,9 +82,9 @@ namespace UgolkiController
                 return;
             }
 
-            if (_board[cell.Row, cell.Column] == BoardCellType.Empty)
+            if (_hasSelectedPiece == true && _board[cell.Row, cell.Column] == BoardCellType.Empty)
             {
-                _ugolkiExternalView.ShowMessage("select_piece");
+                MovePiece(cell);
                 return;
             }
 
@@ -86,8 +94,8 @@ namespace UgolkiController
                 _hasSelectedPiece = true;
                 _selectedPiecePosition = cell;
 
-                List<Coord> availableMoves = GetAvailableMoves(cell);
-                _ugolkiExternalView.SelectPiece(cell, availableMoves);
+                _currentAvailableMoves = GetAvailableMoves(cell);
+                _ugolkiExternalView.SelectPiece(cell, _currentAvailableMoves);
             }
             else
             {
@@ -95,12 +103,34 @@ namespace UgolkiController
             }
         }
 
-        public void TryMovePiece(Coord from, Coord to, Player player)
+        private void OnMoveInfoChanged(Dictionary<Player, int> movesInfo)
         {
-            throw new System.NotImplementedException();
+            MoveInfoChanged?.Invoke(movesInfo);
         }
 
-        public List<Coord> GetAvailableMoves(Coord from)
+        private void ResetBoard()
+        {
+            for (int i = 0; i < _boardSize; i++)
+            {
+                for (int j = 0; j < _boardSize; j++)
+                {
+                    if (i <= 2 && j <= 2)
+                    {
+                        _board[i, j] = BoardCellType.White;
+                    }
+                    else if (i >= 5 && j >= 5)
+                    {
+                        _board[i, j] = BoardCellType.Black;
+                    }
+                    else
+                    {
+                        _board[i, j] = BoardCellType.Empty;
+                    }
+                }
+            }
+        }
+
+        private List<Coord> GetAvailableMoves(Coord from)
         {
             Queue<Coord> toCheck = new Queue<Coord>();
             List<Coord> canJump = new List<Coord>();
@@ -174,31 +204,47 @@ namespace UgolkiController
             return canJump;
         }
 
-        private void OnMoveInfoChanged(Dictionary<Player, int> movesInfo)
+        private void MovePiece(Coord cell)
         {
-            MoveInfoChanged?.Invoke(movesInfo);
+            if (_currentAvailableMoves.Contains(cell) == false)
+            {
+                _ugolkiExternalView.ShowMessage("move_unreachable");
+                return;
+            }
+
+            _board[_selectedPiecePosition.Row, _selectedPiecePosition.Column] = BoardCellType.Empty;
+
+            BoardCellType resultCellType;
+            if (_currentPlayer == Player.White)
+            {
+                resultCellType = BoardCellType.White;
+            }
+            else
+            {
+                resultCellType = BoardCellType.Black;
+            }
+
+            _hasSelectedPiece = false;
+            _board[cell.Row, cell.Column] = resultCellType;
+
+            Move move = new Move {IsJump = false, From = _selectedPiecePosition, To = cell};
+            List<Move> moves = new List<Move> {move};
+
+            _ugolkiExternalView.MovePiece(moves, EndMove);
         }
 
-        private void ResetBoard()
+        private void EndMove()
         {
-            for (int i = 0; i < _boardSize; i++)
+            if (_currentPlayer == Player.White)
             {
-                for (int j = 0; j < _boardSize; j++)
-                {
-                    if (i <= 2 && j <= 2)
-                    {
-                        _board[i, j] = BoardCellType.White;
-                    }
-                    else if (i >= 5 && j >= 5)
-                    {
-                        _board[i, j] = BoardCellType.Black;
-                    }
-                    else
-                    {
-                        _board[i, j] = BoardCellType.Empty;
-                    }
-                }
+                _currentPlayer = Player.Black;
             }
+            else
+            {
+                _currentPlayer = Player.White;
+            }
+
+            PlayerChanged?.Invoke(_currentPlayer);
         }
     }
 }

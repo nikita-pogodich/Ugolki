@@ -11,7 +11,6 @@ namespace UgolkiController
         void StartGame();
         void EndGame();
         Player CheckWinner();
-        void TrySelectPiece(Coord cell);
-        void TryMovePiece(Coord from, Coord to, Player player);
+        void TrySelectCell(Coord cell);
     }
 }

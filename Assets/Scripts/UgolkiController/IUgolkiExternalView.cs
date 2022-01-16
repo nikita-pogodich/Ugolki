@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace UgolkiController
@@ -8,7 +9,7 @@ namespace UgolkiController
         void EndGame(BoardCellType[,] board);
         void SelectPiece(Coord coord, List<Coord> availableMoves);
         void DeselectPiece(Coord coord);
-        void MovePiece(List<Move> path);
+        void MovePiece(List<Move> path, Action onComplete);
         void ShowMessage(string message);
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Core.Managers.Logger;
 using Core.Managers.PoolingManager;
@@ -61,7 +62,7 @@ namespace UgolkiController
                     {
                         Vector3 position = SnapToGrid(hit.point);
                         Vector3 localPoint = _piecesRoot.InverseTransformPoint(position);
-                        _ugolkiController.TrySelectPiece(new Coord((int)localPoint.x, (int)localPoint.z));
+                        _ugolkiController.TrySelectCell(new Coord((int)localPoint.x, (int)localPoint.z));
                     }
                 }
             }
@@ -136,6 +137,8 @@ namespace UgolkiController
             _boardSize = boardSize;
             ClearBoard();
 
+            SetCellHighlightShown(false);
+
             for (int i = 0; i < boardSize; i++)
             {
                 _board.Add(new List<GameObject>());
@@ -161,6 +164,11 @@ namespace UgolkiController
             _isGameStarted = true;
         }
 
+        private void SetCellHighlightShown(bool isShown)
+        {
+            _cellHighlight.gameObject.SetActive(isShown);
+        }
+
         void IUgolkiExternalView.EndGame(BoardCellType[,] board)
         {
             ClearBoard();
@@ -169,14 +177,26 @@ namespace UgolkiController
 
         void IUgolkiExternalView.SelectPiece(Coord coord, List<Coord> availableMoves)
         {
+            SetCellHighlightShown(true);
             _cellHighlight.localPosition = new Vector3(coord.Row, 0.0f, coord.Column);
         }
 
         void IUgolkiExternalView.DeselectPiece(Coord coord)
-        { }
+        {
+            SetCellHighlightShown(false);
+        }
 
-        void IUgolkiExternalView.MovePiece(List<Move> path)
-        { }
+        void IUgolkiExternalView.MovePiece(List<Move> path, Action onComplete)
+        {
+            Move move = path[0];
+            GameObject piece = _board[move.From.Row][move.From.Column];
+            piece.transform.localPosition = new Vector3(move.To.Row, 0.0f, move.To.Column);
+            SetCellHighlightShown(false);
+
+            _board[move.From.Row][move.From.Column] = null;
+            _board[move.To.Row][move.To.Column] = piece;
+            onComplete?.Invoke();
+        }
 
         void IUgolkiExternalView.ShowMessage(string message)
         {
