@@ -22,11 +22,6 @@ namespace Core.Managers.ViewManager
             if (_registeredViews.ContainsKey(viewName) == true)
             {
                 IViewController<ViewModel> viewToOpen = _registeredViews[viewName];
-                if (viewToOpen.IsShown == true)
-                {
-                    LogManager.LogWarning($"View already shown: {viewName}");
-                    return;
-                }
 
                 if (viewToOpen.ViewType == ViewType.Window)
                 {
@@ -36,12 +31,12 @@ namespace Core.Managers.ViewManager
                     }
                 }
 
-                viewToOpen.SetShown(true);
-
                 if (model != null)
                 {
                     viewToOpen.SetModel(model);
                 }
+
+                viewToOpen.SetShown(true);
             }
             else
             {
