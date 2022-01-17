@@ -135,7 +135,7 @@ namespace UgolkiController
         {
             if (_hasSelectedPiece == false && _board[cell.Row, cell.Column] == BoardCellType.Empty)
             {
-                _ugolkiExternalView.ShowMessage("select_piece");
+                _ugolkiExternalView.ShowMessage(UgolkiMessages.SelectPiece);
                 return;
             }
 
@@ -163,7 +163,7 @@ namespace UgolkiController
             }
             else
             {
-                _ugolkiExternalView.ShowMessage("not_your_move");
+                _ugolkiExternalView.ShowMessage(UgolkiMessages.NotYourMove);
             }
         }
 
@@ -211,7 +211,7 @@ namespace UgolkiController
         {
             if (_currentAvailableMoves.Contains(cell) == false)
             {
-                _ugolkiExternalView.ShowMessage("move_unreachable");
+                _ugolkiExternalView.ShowMessage(UgolkiMessages.MoveUnreachable);
                 return;
             }
 

@@ -36,12 +36,12 @@ namespace Core.Managers.ViewManager
                     }
                 }
 
-                viewToOpen.SetShown(true);
-
                 if (model != null)
                 {
                     viewToOpen.SetModel(model);
                 }
+
+                viewToOpen.SetShown(true);
             }
             else
             {

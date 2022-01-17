@@ -5,6 +5,7 @@ using Settings;
 using UgolkiController;
 using UnityEngine;
 using ViewControllers.MainMenu;
+using ViewControllers.MessagePopup;
 using ViewControllers.UgolkiGame;
 
 namespace Core.Managers
@@ -23,6 +24,9 @@ namespace Core.Managers
         [SerializeField]
         private UgolkiGameView _ugolkiGameView;
 
+        [SerializeField]
+        private MessagePopupView _messagePopupView;
+
         private const string _startView = ViewNamesList.MainMenu;
 
         private Logger.ILogger _logger;
@@ -34,10 +38,10 @@ namespace Core.Managers
         {
             _logger = new UnityLogger();
             LogManager.RegisterLogger(_logger);
-            _localizationManager = new LocalizationManager.LocalizationManager();
+            _localizationManager = new LocalizationManager.StubLocalizationManager();
             _viewManager = new ViewManager.ViewManager();
             _ugolkiController = new UgolkiController.UgolkiController(_ugolkiBoard);
-            _ugolkiBoard.Initialize(_poolingManager, _ugolkiController);
+            _ugolkiBoard.Initialize(_poolingManager, _ugolkiController, _viewManager);
 
             RegisterViews();
             ShowStartView();
@@ -47,6 +51,7 @@ namespace Core.Managers
         {
             RegisterMainMenu();
             RegisterUgolkiGame();
+            RegisterMessagePopup();
         }
 
         private void RegisterMainMenu()
@@ -70,6 +75,15 @@ namespace Core.Managers
 
             ugolkiGameViewController.SetView(_ugolkiGameView);
             _viewManager.RegisterView(ugolkiGameViewController.Name, ugolkiGameViewController);
+        }
+
+        private void RegisterMessagePopup()
+        {
+            MessagePopupViewController messagePopupViewController =
+                new MessagePopupViewController(_localizationManager);
+            messagePopupViewController.SetView(_messagePopupView);
+
+            _viewManager.RegisterView(messagePopupViewController.Name, messagePopupViewController);
         }
 
         private void ShowStartView()

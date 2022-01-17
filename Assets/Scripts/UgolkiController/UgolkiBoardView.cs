@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using Core.Managers.Logger;
 using Core.Managers.PoolingManager;
+using Core.Managers.ViewManager;
 using Settings;
 using UnityEngine;
+using ViewControllers.MessagePopup;
 
 namespace UgolkiController
 {
@@ -29,14 +31,20 @@ namespace UgolkiController
 
         private IPoolingManager _poolingManager;
         private IUgolkiController _ugolkiController;
+        private IViewManager _viewManager;
         private List<List<GameObject>> _board = new List<List<GameObject>>();
         private int _boardSize;
         private bool _isGameStarted;
+        private MessagePopupModel _messagePopupModel = new MessagePopupModel();
 
-        public void Initialize(IPoolingManager poolingManager, IUgolkiController ugolkiController)
+        public void Initialize(
+            IPoolingManager poolingManager,
+            IUgolkiController ugolkiController,
+            IViewManager viewManager)
         {
             _poolingManager = poolingManager;
             _ugolkiController = ugolkiController;
+            _viewManager = viewManager;
         }
 
         private void Update()
@@ -206,7 +214,8 @@ namespace UgolkiController
 
         void IUgolkiExternalView.ShowMessage(string message)
         {
-            LogManager.LogDebug(message);
+            _messagePopupModel.UpdateModel(message);
+            _viewManager.ShowView(ViewNamesList.MessagePopup, _messagePopupModel);
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Core.Managers.LocalizationManager
 {
-    public class LocalizationManager : ILocalizationManager
+    public class StubLocalizationManager : ILocalizationManager
     {
         private LanguageInfo _currentLanguage;
         private List<LanguageInfo> _languageInfos;
@@ -12,9 +12,8 @@ namespace Core.Managers.LocalizationManager
         public event Action LocalizationChanged;
         public LanguageInfo CurrentLanguage => _currentLanguage;
 
-        public LocalizationManager()
+        public StubLocalizationManager()
         {
-            //TODO get this data from scriptable object
             _currentLanguage = new LanguageInfo {Code = "en", DisplayName = "English", Icon = "English"};
             _languageInfos = new List<LanguageInfo> {_currentLanguage};
             _languageTerms = new Dictionary<string, string>
@@ -28,7 +27,10 @@ namespace Core.Managers.LocalizationManager
                 {"black_moves_count", "Black: [moves]"},
                 {"current_player", "Current player:<br>[player]"},
                 {"white_player", "White"},
-                {"black_player", "Black"}
+                {"black_player", "Black"},
+                {"not_your_move_message", "Not your move"},
+                {"select_piece_message", "Select piece"},
+                {"move_unreachable_message", "Move unreachable"},
             };
         }
 
