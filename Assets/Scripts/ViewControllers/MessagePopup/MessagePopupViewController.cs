@@ -8,10 +8,10 @@ namespace ViewControllers.MessagePopup
 {
     public class MessagePopupViewController : BaseViewController<MessagePopupView, ViewModel>
     {
+        private ILocalizationManager _localizationManager;
+
         public override ViewType ViewType => ViewType.Popup;
         public override string Name => ViewNamesList.MessagePopup;
-
-        private ILocalizationManager _localizationManager;
 
         public MessagePopupViewController(ILocalizationManager localizationManager)
         {

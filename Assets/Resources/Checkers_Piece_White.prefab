@@ -12,6 +12,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Checkers_Piece_White
       objectReference: {fileID: 0}
+    - target: {fileID: 3061304129630731974, guid: 77fea5b6382003846a877bc09f021d2d,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: cae18c2e55dc55943882cc216ddaf7b4, type: 2}
     - target: {fileID: 3553486278954697907, guid: 77fea5b6382003846a877bc09f021d2d,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
