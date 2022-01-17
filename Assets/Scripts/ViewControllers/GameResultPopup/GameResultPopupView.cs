@@ -28,12 +28,12 @@ namespace ViewControllers.GameResultPopup
             _gameResult.text = gameResult;
         }
 
-        public void FadeIn(Action onComplete)
+        public void FadeIn(Action onComplete = null)
         {
             _fadeAnimation.FadeIn(onComplete);
         }
 
-        public void FadeOut(Action onComplete)
+        public void FadeOut(Action onComplete = null)
         {
             _fadeAnimation.FadeOut(onComplete);
         }
@@ -42,6 +42,12 @@ namespace ViewControllers.GameResultPopup
         {
             _backToMenu.onClick.AddListener(OnBackToMenu);
             _restartGame.onClick.AddListener(OnRestartGame);
+        }
+
+        private void OnDestroy()
+        {
+            _backToMenu.onClick.RemoveListener(OnBackToMenu);
+            _restartGame.onClick.RemoveListener(OnRestartGame);
         }
 
         private void OnBackToMenu()

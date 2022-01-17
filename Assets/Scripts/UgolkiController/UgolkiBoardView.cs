@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Core.Managers.Logger;
 using Core.Managers.PoolingManager;
 using Core.Managers.ViewManager;
 using Settings;
 using UnityEngine;
+using ViewControllers.GameResultPopup;
 using ViewControllers.MessagePopup;
 
 namespace UgolkiController
@@ -36,6 +36,7 @@ namespace UgolkiController
         private int _boardSize;
         private bool _isGameStarted;
         private MessagePopupModel _messagePopupModel = new MessagePopupModel();
+        private GameResultPopupModel _gameResultPopupModel = new GameResultPopupModel();
 
         public void Initialize(
             IPoolingManager poolingManager,
@@ -174,8 +175,27 @@ namespace UgolkiController
 
         public void ShowWinner(Player? winner)
         {
+            if (winner == null)
+            {
+                return;
+            }
+
             _isGameStarted = false;
-            LogManager.LogDebug($"Winner: {winner.Value.ToString()}");
+
+            _gameResultPopupModel.UpdateModel(winner.Value, OnRestart, OnBackToMenu);
+            _viewManager.ShowView(ViewNamesList.GameResultPopup, _gameResultPopupModel);
+        }
+
+        private void OnRestart()
+        {
+            _ugolkiController.EndGame();
+            _ugolkiController.StartGame();
+        }
+
+        private void OnBackToMenu()
+        {
+            _ugolkiController.EndGame();
+            _viewManager.ShowView(ViewNamesList.MainMenu);
         }
 
         private void SetCellHighlightShown(bool isShown)
@@ -202,6 +222,8 @@ namespace UgolkiController
 
         void IUgolkiExternalView.MovePiece(List<Move> path, Action onComplete)
         {
+            //TODO: add animation
+
             Move move = path[0];
             GameObject piece = _board[move.From.Row][move.From.Column];
             piece.transform.localPosition = new Vector3(move.To.Row, 0.0f, move.To.Column);

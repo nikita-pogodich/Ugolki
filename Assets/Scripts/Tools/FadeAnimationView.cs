@@ -10,7 +10,7 @@ namespace Tools
         private CanvasGroup _visible;
 
         [SerializeField]
-        private float _fadeDuration;
+        private float _fadeDuration = 0.2f;
 
         [SerializeField]
         private float _stayShownDuration;
@@ -19,11 +19,15 @@ namespace Tools
 
         public void FadeIn(Action onComplete)
         {
+            _visible.interactable = true;
+            _visible.blocksRaycasts = true;
             Fade(endAlpha: 1.0f, onCompleteDelay: _stayShownDuration, Ease.InQuad, onComplete);
         }
 
         public void FadeOut(Action onComplete)
         {
+            _visible.interactable = false;
+            _visible.blocksRaycasts = false;
             Fade(endAlpha: 0.0f, onCompleteDelay: 0.0f, Ease.OutQuad, onComplete);
         }
 
@@ -34,7 +38,6 @@ namespace Tools
 
             Tween fadeTween = _visible.DOFade(endAlpha, _fadeDuration).SetEase(ease);
             _fadeAnimation
-                .Append(fadeTween)
                 .Append(fadeTween)
                 .AppendInterval(onCompleteDelay);
 

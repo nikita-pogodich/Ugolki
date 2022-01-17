@@ -4,6 +4,7 @@ using Core.Managers.ViewManager;
 using Settings;
 using UgolkiController;
 using UnityEngine;
+using ViewControllers.GameResultPopup;
 using ViewControllers.MainMenu;
 using ViewControllers.MessagePopup;
 using ViewControllers.UgolkiGame;
@@ -26,6 +27,9 @@ namespace Core.Managers
 
         [SerializeField]
         private MessagePopupView _messagePopupView;
+
+        [SerializeField]
+        private GameResultPopupView _gameResultPopupView;
 
         private const string _startView = ViewNamesList.MainMenu;
 
@@ -52,6 +56,12 @@ namespace Core.Managers
             RegisterMainMenu();
             RegisterUgolkiGame();
             RegisterMessagePopup();
+            RegisterGameResultPopup();
+        }
+
+        private void ShowStartView()
+        {
+            _viewManager.ShowView(_startView);
         }
 
         private void RegisterMainMenu()
@@ -86,9 +96,13 @@ namespace Core.Managers
             _viewManager.RegisterView(messagePopupViewController.Name, messagePopupViewController);
         }
 
-        private void ShowStartView()
+        private void RegisterGameResultPopup()
         {
-            _viewManager.ShowView(_startView);
+            GameResultPopupViewController gameResultPopupViewController =
+                new GameResultPopupViewController(_localizationManager);
+
+            gameResultPopupViewController.SetView(_gameResultPopupView);
+            _viewManager.RegisterView(gameResultPopupViewController.Name, gameResultPopupViewController);
         }
     }
 }

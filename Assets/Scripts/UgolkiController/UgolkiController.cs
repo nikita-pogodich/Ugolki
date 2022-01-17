@@ -7,6 +7,7 @@ namespace UgolkiController
     public class UgolkiController : IUgolkiController
     {
         private const int _boardSize = 8;
+        private const int _piecesToWinCount = 9;
         private const int _whiteHousePosition = 2;
         private const int _blackHousePosition = 5;
 
@@ -101,9 +102,9 @@ namespace UgolkiController
         public Player? CheckWinner()
         {
             int black = 0, white = 0;
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < _boardSize; i++)
             {
-                for (int j = 0; j < 8; j++)
+                for (int j = 0; j < _boardSize; j++)
                 {
                     if (i >= _blackHousePosition && j >= _blackHousePosition && _board[i, j] == BoardCellType.White)
                     {
@@ -118,12 +119,12 @@ namespace UgolkiController
                 }
             }
 
-            if (black == 9)
+            if (black == _piecesToWinCount)
             {
                 return Player.Black;
             }
 
-            if (white == 9)
+            if (white == _piecesToWinCount)
             {
                 return Player.White;
             }
@@ -230,6 +231,7 @@ namespace UgolkiController
             _hasSelectedPiece = false;
             _board[cell.Row, cell.Column] = resultCellType;
 
+            //TODO: fill moves
             Move move = new Move {IsJump = false, From = _selectedPiecePosition, To = cell};
             List<Move> moves = new List<Move> {move};
 

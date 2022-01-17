@@ -31,6 +31,8 @@ namespace Core.Managers.LocalizationManager
                 {"not_your_move_message", "Not your move"},
                 {"select_piece_message", "Select piece"},
                 {"move_unreachable_message", "Move unreachable"},
+                {"gamer_result_white_wins", "White player wins"},
+                {"gamer_result_black_wins", "Black player wins"}
             };
         }
 
