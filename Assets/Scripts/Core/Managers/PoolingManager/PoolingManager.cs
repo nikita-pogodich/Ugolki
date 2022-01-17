@@ -53,6 +53,8 @@ namespace Core.Managers.PoolingManager
                 pool.Push(resource);
                 _pool.Add(resourceKey, pool);
             }
+
+            resource.transform.SetParent(_poolRoot);
         }
 
         private GameObject InstantiateGameObject(string resourceKey)
@@ -64,12 +66,17 @@ namespace Core.Managers.PoolingManager
                 return null;
             }
 
-            GameObject instantiate = Instantiate(
+            GameObject result = Instantiate(
                 original: resource,
                 parent: _poolRoot,
                 instantiateInWorldSpace: true) as GameObject;
 
-            return instantiate;
+            if (result != null)
+            {
+                result.name = resource.name;
+            }
+
+            return result;
         }
     }
 }

@@ -9,6 +9,7 @@ namespace Core.Managers.LocalizationManager
         LanguageInfo CurrentLanguage { get; }
 
         string GetText(string key);
+        string GetText(string key, string keyToReplace, string valueToReplace);
 
         void SetLocale(string key);
         List<LanguageInfo> GetLocales();

@@ -50,6 +50,7 @@ namespace Core.MVC
         public virtual void SetShown(bool isShown)
         {
             _isShown = isShown;
+            OnSetShown(_isShown);
         }
 
         public void Dispose()
@@ -69,6 +70,9 @@ namespace Core.MVC
         { }
 
         protected virtual void OnViewRemoved()
+        { }
+
+        protected virtual void OnSetShown(bool isShown)
         { }
 
         protected virtual void OnDispose()

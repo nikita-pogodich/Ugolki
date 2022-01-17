@@ -8,7 +8,4 @@ namespace Core.MVC
         void SetShown(bool isShown);
         void SetModel(TModel model);
     }
-
-    public interface IViewController : IViewController<ViewModel>
-    { }
 }

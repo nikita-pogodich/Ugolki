@@ -1,16 +1,17 @@
+using System;
 using System.Collections.Generic;
 
 namespace UgolkiController
 {
     public interface IUgolkiController
     {
-        BoardCellType[,] Board { get; }
+        event Action<Dictionary<Player, int>> MoveInfoChanged;
+        event Action<Player> PlayerChanged;
         List<string> GetRules();
         void SetRule(string rule);
         void StartGame();
         void EndGame();
-        Player CheckWinner();
-        bool TrySelectPiece(Coord cell, out string errorType);
-        bool TryMovePiece(Coord from, Coord to, Player player, string errorType);
+        Player? CheckWinner();
+        void TrySelectCell(Coord cell);
     }
 }

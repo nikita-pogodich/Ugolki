@@ -23,7 +23,12 @@ namespace Core.Managers.LocalizationManager
                 {"start_game_button", "Start Game"},
                 {"ugolki_rule_1", "Pieces can jump over another diagonally"},
                 {"ugolki_rule_2", "Pieces can jump vertically and horizontally"},
-                {"ugolki_rule_3", "Pieces cannot jump, but only take one step in either direction"}
+                {"ugolki_rule_3", "Pieces cannot jump, but only take one step in either direction"},
+                {"white_moves_count", "White: [moves]"},
+                {"black_moves_count", "Black: [moves]"},
+                {"current_player", "Current player:<br>[player]"},
+                {"white_player", "White"},
+                {"black_player", "Black"}
             };
         }
 
@@ -38,6 +43,13 @@ namespace Core.Managers.LocalizationManager
             return result;
         }
 
+        public string GetText(string key, string keyToReplace, string valueToReplace)
+        {
+            string sourceString = (this as ILocalizationManager).GetText(key);
+            string result = ReplaceWithLocalizedString(sourceString, keyToReplace, valueToReplace);
+            return result;
+        }
+
         public void SetLocale(string key)
         {
             LocalizationChanged?.Invoke();
@@ -46,6 +58,21 @@ namespace Core.Managers.LocalizationManager
         public List<LanguageInfo> GetLocales()
         {
             return _languageInfos;
+        }
+
+        private string ReplaceWithLocalizedString(
+            string sourceString,
+            string keyToReplace,
+            string valToLocalizeAndReplace)
+        {
+            string result = sourceString;
+            if (string.IsNullOrEmpty(sourceString) == false)
+            {
+                string replacementString = GetText(valToLocalizeAndReplace);
+                result = result.Replace(keyToReplace, replacementString);
+            }
+
+            return result;
         }
     }
 }

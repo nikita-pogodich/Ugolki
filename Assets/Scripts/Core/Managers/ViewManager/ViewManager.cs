@@ -6,9 +6,10 @@ namespace Core.Managers.ViewManager
 {
     public class ViewManager : IViewManager
     {
-        private Dictionary<string, IViewController> _registeredViews = new Dictionary<string, IViewController>();
+        private Dictionary<string, IViewController<ViewModel>> _registeredViews =
+            new Dictionary<string, IViewController<ViewModel>>();
 
-        public void RegisterView(string viewName, IViewController viewController)
+        public void RegisterView(string viewName, IViewController<ViewModel> viewController)
         {
             if (_registeredViews.ContainsKey(viewName) == false)
             {
@@ -20,7 +21,7 @@ namespace Core.Managers.ViewManager
         {
             if (_registeredViews.ContainsKey(viewName) == true)
             {
-                IViewController viewToOpen = _registeredViews[viewName];
+                IViewController<ViewModel> viewToOpen = _registeredViews[viewName];
                 if (viewToOpen.IsShown == true)
                 {
                     LogManager.LogWarning($"View already shown: {viewName}");
@@ -29,14 +30,18 @@ namespace Core.Managers.ViewManager
 
                 if (viewToOpen.ViewType == ViewType.Window)
                 {
-                    foreach (IViewController viewToClose in _registeredViews.Values)
+                    foreach (IViewController<ViewModel> viewToClose in _registeredViews.Values)
                     {
                         viewToClose.SetShown(false);
                     }
                 }
 
                 viewToOpen.SetShown(true);
-                viewToOpen.SetModel(model);
+
+                if (model != null)
+                {
+                    viewToOpen.SetModel(model);
+                }
             }
             else
             {
@@ -48,7 +53,7 @@ namespace Core.Managers.ViewManager
         {
             if (_registeredViews.ContainsKey(viewName) == true)
             {
-                IViewController viewToOpen = _registeredViews[viewName];
+                IViewController<ViewModel> viewToOpen = _registeredViews[viewName];
                 if (viewToOpen.IsShown == false)
                 {
                     LogManager.LogWarning($"View already hidden: {viewName}");

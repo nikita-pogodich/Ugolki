@@ -55,13 +55,12 @@ namespace ViewControllers.MainMenu.UgolkiRulesList
                 rulesListItem.SetModel(this.Model[i]);
                 rulesListItem.SetView(rulesListItemView);
                 rulesListItem.Selected += SelectRule;
-                rulesListItem.SetSelected(false);
                 _ugolkiRulesList.Add(rulesListItem);
 
                 this.View.AddItem(rulesListItemView.gameObject);
             }
 
-            _ugolkiRulesList[_defaultSelectedRule].SetSelected(true);
+            SelectRule(_ugolkiRulesList[_defaultSelectedRule]);
         }
 
         protected override void OnDispose()
