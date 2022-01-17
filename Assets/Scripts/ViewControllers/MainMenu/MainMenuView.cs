@@ -16,7 +16,11 @@ namespace ViewControllers.MainMenu
         [SerializeField]
         private Button _startGame;
 
+        [SerializeField]
+        private Button _exit;
+
         public event Action StartGame;
+        public event Action ExitGame;
 
         public UgolkiRulesListView UgolkiRulesList => _ugolkiRulesList;
 
@@ -30,16 +34,23 @@ namespace ViewControllers.MainMenu
         private void Start()
         {
             _startGame.onClick.AddListener(OnStartGame);
+            _exit.onClick.AddListener(OnExitGame);
         }
 
         private void OnDestroy()
         {
             _startGame.onClick.RemoveListener(OnStartGame);
+            _exit.onClick.RemoveListener(OnExitGame);
         }
 
         private void OnStartGame()
         {
             StartGame?.Invoke();
+        }
+
+        private void OnExitGame()
+        {
+            ExitGame?.Invoke();
         }
     }
 }

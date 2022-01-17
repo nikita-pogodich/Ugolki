@@ -5,6 +5,7 @@ using Core.Managers.ViewManager;
 using Core.MVC;
 using Settings;
 using UgolkiController;
+using UnityEngine;
 using ViewControllers.MainMenu.UgolkiRulesList;
 
 namespace ViewControllers.MainMenu
@@ -34,6 +35,7 @@ namespace ViewControllers.MainMenu
         protected override void OnViewAdded()
         {
             this.View.StartGame += OnStartGame;
+            this.View.ExitGame += OnExitGame;
             _ugolkiRulesList.RuleSelected += OnRuleSelected;
 
             _ugolkiRules = _ugolkiController.GetRules();
@@ -44,6 +46,7 @@ namespace ViewControllers.MainMenu
         protected override void OnViewRemoved()
         {
             this.View.StartGame -= OnStartGame;
+            this.View.ExitGame -= OnExitGame;
             _ugolkiRulesList.RuleSelected -= OnRuleSelected;
         }
 
@@ -61,6 +64,11 @@ namespace ViewControllers.MainMenu
         {
             _ugolkiController.StartGame();
             _viewManager.ShowView(ViewNamesList.UgolkiGame);
+        }
+
+        private void OnExitGame()
+        {
+            Application.Quit();
         }
     }
 }
