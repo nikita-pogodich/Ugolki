@@ -1,4 +1,5 @@
 using System;
+using Core.MVC;
 using TMPro;
 using Tools;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine.UI;
 
 namespace ViewControllers.GameResultPopup
 {
-    public class GameResultPopupView : MonoBehaviour
+    public class GameResultPopupView : BaseView, IGameResultPopupView
     {
         [SerializeField]
         private TextMeshProUGUI _gameResult;

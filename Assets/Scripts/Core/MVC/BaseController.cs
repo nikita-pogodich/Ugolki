@@ -1,9 +1,8 @@
-using UnityEngine;
-
 namespace Core.MVC
 {
-    public abstract class BaseViewController<TView, TModel> : IViewController<TModel>
-        where TView : MonoBehaviour
+    public abstract class BaseController<TView, TModel> : IController<TView, TModel>
+        where TView : IView
+        where TModel : IModel
     {
         private TView _view;
         private TModel _model;
@@ -19,6 +18,12 @@ namespace Core.MVC
         public bool HasView => _hasView;
         public bool HasModel => _hasModel;
         public bool IsShown => _isShown;
+
+        protected BaseController(TView view, TModel model)
+        {
+            SetView(view);
+            SetModel(model);
+        }
 
         public void SetModel(TModel model)
         {
@@ -42,7 +47,6 @@ namespace Core.MVC
 
         public void RemoveView()
         {
-            _view = null;
             _hasView = false;
             OnViewRemoved();
         }

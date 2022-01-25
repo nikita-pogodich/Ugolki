@@ -8,7 +8,7 @@ using UgolkiController;
 
 namespace ViewControllers.UgolkiGame
 {
-    public class UgolkiGameViewController : BaseViewController<UgolkiGameView, ViewModel>
+    public class UgolkiGameController : BaseController<IUgolkiGameView, IUgolkiGameModel>, IUgolkiGameController
     {
         public override ViewType ViewType => ViewType.Window;
         public override string Name => ViewNamesList.UgolkiGame;
@@ -17,24 +17,23 @@ namespace ViewControllers.UgolkiGame
         private IViewManager _viewManager;
         private ILocalizationManager _localizationManager;
 
-        public UgolkiGameViewController(
+        public UgolkiGameController(
             IViewManager viewManager,
             IUgolkiController ugolkiController,
-            ILocalizationManager localizationManager)
+            ILocalizationManager localizationManager,
+            IUgolkiGameView view,
+            IUgolkiGameModel model = null) : base(view, model)
         {
             _ugolkiController = ugolkiController;
             _viewManager = viewManager;
             _localizationManager = localizationManager;
-        }
 
-        protected override void OnViewAdded()
-        {
             _ugolkiController.MoveInfoChanged += OnMoveInfoChanged;
             _ugolkiController.PlayerChanged += OnCurrentPlayerChanged;
             this.View.Back += OnBack;
         }
 
-        protected override void OnViewRemoved()
+        protected override void OnDispose()
         {
             _ugolkiController.MoveInfoChanged -= OnMoveInfoChanged;
             _ugolkiController.PlayerChanged -= OnCurrentPlayerChanged;

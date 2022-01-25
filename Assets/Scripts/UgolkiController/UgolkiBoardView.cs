@@ -32,20 +32,24 @@ namespace UgolkiController
         private IPoolingManager _poolingManager;
         private IUgolkiController _ugolkiController;
         private IViewManager _viewManager;
+        private IMessagePopupModel _messagePopupModel;
+        private IGameResultPopupModel _gameResultPopupModel;
         private List<List<GameObject>> _board = new List<List<GameObject>>();
         private int _boardSize;
         private bool _isGameStarted;
-        private MessagePopupModel _messagePopupModel = new MessagePopupModel();
-        private GameResultPopupModel _gameResultPopupModel = new GameResultPopupModel();
 
         public void Initialize(
             IPoolingManager poolingManager,
             IUgolkiController ugolkiController,
-            IViewManager viewManager)
+            IViewManager viewManager,
+            IMessagePopupModel messagePopupModel,
+            IGameResultPopupModel gameResultPopupModel)
         {
             _poolingManager = poolingManager;
             _ugolkiController = ugolkiController;
             _viewManager = viewManager;
+            _messagePopupModel = messagePopupModel;
+            _gameResultPopupModel = gameResultPopupModel;
         }
 
         private void Update()
@@ -183,7 +187,7 @@ namespace UgolkiController
             _isGameStarted = false;
 
             _gameResultPopupModel.UpdateModel(winner.Value, OnRestart, OnBackToMenu);
-            _viewManager.ShowView(ViewNamesList.GameResultPopup, _gameResultPopupModel);
+            _viewManager.ShowView(ViewNamesList.GameResultPopup);
         }
 
         private void OnRestart()
@@ -236,8 +240,8 @@ namespace UgolkiController
 
         void IUgolkiExternalView.ShowMessage(string message)
         {
-            _messagePopupModel.UpdateModel(message);
-            _viewManager.ShowView(ViewNamesList.MessagePopup, _messagePopupModel);
+            _messagePopupModel.UpdateMessageKey(message);
+            _viewManager.ShowView(ViewNamesList.MessagePopup);
         }
     }
 }

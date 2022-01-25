@@ -22,12 +22,12 @@ namespace UgolkiController
         private bool _hasSelectedPiece;
         private List<Coord> _currentAvailableMoves = new List<Coord>();
 
-        public event Action<Dictionary<Player, int>> MoveInfoChanged;
-        public event Action<Player> PlayerChanged;
-
         private CannotJumpRule _cannotJumpRule = new CannotJumpRule();
         private CanJumpOrthogonallyRule _canJumpOrthogonallyRule = new CanJumpOrthogonallyRule();
         private CanJumpDiagonallyRule _canJumpDiagonallyRule = new CanJumpDiagonallyRule();
+
+        public event Action<Dictionary<Player, int>> MoveInfoChanged;
+        public event Action<Player> PlayerChanged;
 
         public UgolkiController(IUgolkiExternalView ugolkiExternalView)
         {

@@ -1,11 +1,12 @@
 using System;
+using Core.MVC;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace ViewControllers.UgolkiGame
 {
-    public class UgolkiGameView : MonoBehaviour
+    public class UgolkiGameView : BaseView, IUgolkiGameView
     {
         [SerializeField]
         private Button _back;

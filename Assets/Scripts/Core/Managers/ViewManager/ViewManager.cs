@@ -6,37 +6,32 @@ namespace Core.Managers.ViewManager
 {
     public class ViewManager : IViewManager
     {
-        private Dictionary<string, IViewController<ViewModel>> _registeredViews =
-            new Dictionary<string, IViewController<ViewModel>>();
+        private Dictionary<string, IController> _registeredViews =
+            new Dictionary<string, IController>();
 
-        public void RegisterView(string viewName, IViewController<ViewModel> viewController)
+        public void RegisterView(string viewName, IController controller)
         {
             if (_registeredViews.ContainsKey(viewName) == false)
             {
-                _registeredViews.Add(viewName, viewController);
+                _registeredViews.Add(viewName, controller);
             }
         }
 
-        public void ShowView(string viewName, ViewModel model)
+        public void ShowView(string viewName)
         {
             if (_registeredViews.ContainsKey(viewName) == true)
             {
-                IViewController<ViewModel> viewToOpen = _registeredViews[viewName];
+                IController toOpen = _registeredViews[viewName];
 
-                if (viewToOpen.ViewType == ViewType.Window)
+                if (toOpen.ViewType == ViewType.Window)
                 {
-                    foreach (IViewController<ViewModel> viewToClose in _registeredViews.Values)
+                    foreach (IController viewToClose in _registeredViews.Values)
                     {
                         viewToClose.SetShown(false);
                     }
                 }
 
-                if (model != null)
-                {
-                    viewToOpen.SetModel(model);
-                }
-
-                viewToOpen.SetShown(true);
+                toOpen.SetShown(true);
             }
             else
             {
@@ -48,8 +43,8 @@ namespace Core.Managers.ViewManager
         {
             if (_registeredViews.ContainsKey(viewName) == true)
             {
-                IViewController<ViewModel> viewToOpen = _registeredViews[viewName];
-                if (viewToOpen.IsShown == false)
+                IController toOpen = _registeredViews[viewName];
+                if (toOpen.IsShown == false)
                 {
                     LogManager.LogWarning($"View already hidden: {viewName}");
                     return;
@@ -61,6 +56,16 @@ namespace Core.Managers.ViewManager
             {
                 LogManager.LogWarning($"View not registered: {viewName}");
             }
+        }
+
+        public void Dispose()
+        {
+            foreach (IController controller in _registeredViews.Values)
+            {
+                controller.Dispose();
+            }
+
+            _registeredViews.Clear();
         }
     }
 }

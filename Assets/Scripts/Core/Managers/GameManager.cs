@@ -1,6 +1,8 @@
+using System;
 using Core.Managers.LocalizationManager;
 using Core.Managers.Logger;
 using Core.Managers.ViewManager;
+using Core.MVC;
 using Settings;
 using UgolkiController;
 using UnityEngine;
@@ -37,18 +39,34 @@ namespace Core.Managers
         private IViewManager _viewManager;
         private IUgolkiController _ugolkiController;
         private ILocalizationManager _localizationManager;
+        private IViewFactory _viewFactory;
+
+        private IMessagePopupModel _messagePopupModel = new MessagePopupModel();
+        private IGameResultPopupModel _gameResultPopupModel = new GameResultPopupModel();
 
         private void Start()
         {
             _logger = new UnityLogger();
             LogManager.RegisterLogger(_logger);
-            _localizationManager = new LocalizationManager.StubLocalizationManager();
+            _localizationManager = new StubLocalizationManager();
             _viewManager = new ViewManager.ViewManager();
+            _viewFactory = new ViewFactory(_poolingManager);
             _ugolkiController = new UgolkiController.UgolkiController(_ugolkiBoard);
-            _ugolkiBoard.Initialize(_poolingManager, _ugolkiController, _viewManager);
+
+            _ugolkiBoard.Initialize(
+                _poolingManager,
+                _ugolkiController,
+                _viewManager,
+                _messagePopupModel,
+                _gameResultPopupModel);
 
             RegisterViews();
             ShowStartView();
+        }
+
+        private void OnDestroy()
+        {
+            _viewManager.Dispose();
         }
 
         private void RegisterViews()
@@ -66,43 +84,41 @@ namespace Core.Managers
 
         private void RegisterMainMenu()
         {
-            MainMenuViewController mainMenuViewController = new MainMenuViewController(
+            IMainMenuController mainMenuController = new MainMenuController(
                 _viewManager,
                 _ugolkiController,
-                _poolingManager,
-                _localizationManager);
+                _viewFactory,
+                _localizationManager,
+                _mainMenuView);
 
-            mainMenuViewController.SetView(_mainMenuView);
-            _viewManager.RegisterView(mainMenuViewController.Name, mainMenuViewController);
+            _viewManager.RegisterView(mainMenuController.Name, mainMenuController);
         }
 
         private void RegisterUgolkiGame()
         {
-            UgolkiGameViewController ugolkiGameViewController = new UgolkiGameViewController(
+            IUgolkiGameController ugolkiGameViewController = new UgolkiGameController(
                 _viewManager,
                 _ugolkiController,
-                _localizationManager);
+                _localizationManager,
+                _ugolkiGameView);
 
-            ugolkiGameViewController.SetView(_ugolkiGameView);
             _viewManager.RegisterView(ugolkiGameViewController.Name, ugolkiGameViewController);
         }
 
         private void RegisterMessagePopup()
         {
-            MessagePopupViewController messagePopupViewController =
-                new MessagePopupViewController(_localizationManager);
-            messagePopupViewController.SetView(_messagePopupView);
+            IMessagePopupController messagePopupViewController =
+                new MessagePopupController(_messagePopupView, _messagePopupModel, _localizationManager);
 
             _viewManager.RegisterView(messagePopupViewController.Name, messagePopupViewController);
         }
 
         private void RegisterGameResultPopup()
         {
-            GameResultPopupViewController gameResultPopupViewController =
-                new GameResultPopupViewController(_localizationManager);
+            IGameResultPopupController gameResultPopupController =
+                new GameResultPopupController(_gameResultPopupView, _gameResultPopupModel, _localizationManager);
 
-            gameResultPopupViewController.SetView(_gameResultPopupView);
-            _viewManager.RegisterView(gameResultPopupViewController.Name, gameResultPopupViewController);
+            _viewManager.RegisterView(gameResultPopupController.Name, gameResultPopupController);
         }
     }
 }
