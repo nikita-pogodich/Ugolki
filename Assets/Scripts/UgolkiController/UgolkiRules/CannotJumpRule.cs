@@ -6,7 +6,7 @@ namespace UgolkiController.UgolkiRules
     {
         public override void TryAddAvailableMoves(
             BoardCellType[,] board,
-            Coord from,
+            Coord fromCell,
             Queue<Coord> toCheck,
             List<Coord> canJump)
         {
@@ -19,9 +19,38 @@ namespace UgolkiController.UgolkiRules
                         continue;
                     }
 
-                    TryAddAvailableMove(board, from, i, j, canJump);
+                    TryAddAvailableMove(board, fromCell, i, j, canJump);
                 }
             }
+        }
+
+        public override List<Coord> FindMoves(
+            BoardCellType[,] board,
+            Coord fromCell,
+            Coord toCell)
+        {
+            List<Coord> canJump = new List<Coord> {fromCell};
+            List<Coord> moves = new List<Coord>();
+            Queue<Coord> toCheck = new Queue<Coord>();
+            toCheck.Enqueue(fromCell);
+
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    if (i == 0 && j == 0)
+                    {
+                        continue;
+                    }
+
+                    if (FindMove(board, fromCell, toCell, i, j, canJump, moves))
+                    {
+                        return moves;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -26,6 +26,42 @@ namespace UgolkiController
         private CanJumpOrthogonallyRule _canJumpOrthogonallyRule = new CanJumpOrthogonallyRule();
         private CanJumpDiagonallyRule _canJumpDiagonallyRule = new CanJumpDiagonallyRule();
 
+        private BoardCellType[,] _testBoard =
+        {
+            {
+                BoardCellType.White, BoardCellType.White, BoardCellType.Empty, BoardCellType.White, BoardCellType.Empty,
+                BoardCellType.White, BoardCellType.Empty, BoardCellType.Empty
+            },
+            {
+                BoardCellType.White, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
+                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty
+            },
+            {
+                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
+                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty
+            },
+            {
+                BoardCellType.White, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
+                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty
+            },
+            {
+                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
+                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty
+            },
+            {
+                BoardCellType.White, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
+                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty
+            },
+            {
+                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
+                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty
+            },
+            {
+                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
+                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Black
+            }
+        };
+
         public event Action<Dictionary<Player, int>> MoveInfoChanged;
         public event Action<Player> PlayerChanged;
 
@@ -175,36 +211,37 @@ namespace UgolkiController
 
         private void ResetBoard()
         {
-            for (int i = 0; i < _boardSize; i++)
-            {
-                for (int j = 0; j < _boardSize; j++)
-                {
-                    if (i <= _whiteHousePosition && j <= _whiteHousePosition)
-                    {
-                        _board[i, j] = BoardCellType.White;
-                    }
-                    else if (i >= _blackHousePosition && j >= _blackHousePosition)
-                    {
-                        _board[i, j] = BoardCellType.Black;
-                    }
-                    else
-                    {
-                        _board[i, j] = BoardCellType.Empty;
-                    }
-                }
-            }
+            _board = _testBoard;
+
+            // for (int i = 0; i < _boardSize; i++)
+            // {
+            //     for (int j = 0; j < _boardSize; j++)
+            //     {
+            //         if (i <= _whiteHousePosition && j <= _whiteHousePosition)
+            //         {
+            //             _board[i, j] = BoardCellType.White;
+            //         }
+            //         else if (i >= _blackHousePosition && j >= _blackHousePosition)
+            //         {
+            //             _board[i, j] = BoardCellType.Black;
+            //         }
+            //         else
+            //         {
+            //             _board[i, j] = BoardCellType.Empty;
+            //         }
+            //     }
+            // }
         }
 
-        private List<Coord> GetAvailableMoves(Coord from)
+        private List<Coord> GetAvailableMoves(Coord fromCell)
         {
             Queue<Coord> toCheck = new Queue<Coord>();
-            List<Coord> canJump = new List<Coord>();
-            canJump.Add(from);
-            toCheck.Enqueue(from);
+            List<Coord> canJump = new List<Coord> {fromCell};
+            toCheck.Enqueue(fromCell);
 
-            _availableMovesByRule[_currentRule].TryAddAvailableMoves(_board, from, toCheck, canJump);
+            _availableMovesByRule[_currentRule].TryAddAvailableMoves(_board, fromCell, toCheck, canJump);
 
-            canJump.Remove(from);
+            canJump.Remove(fromCell);
             return canJump;
         }
 
@@ -229,11 +266,10 @@ namespace UgolkiController
             }
 
             _hasSelectedPiece = false;
-            _board[cell.Row, cell.Column] = resultCellType;
 
-            //TODO: fill moves
-            Move move = new Move {IsJump = false, From = _selectedPiecePosition, To = cell};
-            List<Move> moves = new List<Move> {move};
+            List<Coord> moves = _availableMovesByRule[_currentRule].FindMoves(_board, _selectedPiecePosition, cell);
+
+            _board[cell.Row, cell.Column] = resultCellType;
 
             _ugolkiExternalView.MovePiece(moves, OnMoveComplete);
         }

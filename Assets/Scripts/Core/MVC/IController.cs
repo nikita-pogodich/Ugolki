@@ -10,11 +10,9 @@ namespace Core.MVC
         void SetShown(bool isShown);
     }
 
-    public interface IController<TView, TModel> : IController where TView : IView where TModel : IModel
+    public interface IController<out TView, out TModel> : IController where TView : IView where TModel : IModel
     {
         TView View { get; }
         TModel Model { get; }
-        void SetModel(TModel model);
-        void SetView(TView view);
     }
 }

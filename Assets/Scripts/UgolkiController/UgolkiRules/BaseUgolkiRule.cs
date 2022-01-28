@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UgolkiController.UgolkiRules
 {
@@ -6,9 +7,11 @@ namespace UgolkiController.UgolkiRules
     {
         public abstract void TryAddAvailableMoves(
             BoardCellType[,] board,
-            Coord from,
+            Coord fromCell,
             Queue<Coord> toCheck,
             List<Coord> canJump);
+
+        public abstract List<Coord> FindMoves(BoardCellType[,] board, Coord fromCell, Coord toCell);
 
         protected void TryAddAvailableJump(
             BoardCellType[,] board,
@@ -58,6 +61,55 @@ namespace UgolkiController.UgolkiRules
             {
                 canJump.Add(currentTo);
             }
+        }
+
+        protected bool FindJumps(
+            BoardCellType[,] board,
+            Coord fromCell,
+            Coord toCell,
+            int row,
+            int column,
+            List<Coord> canJump,
+            Queue<Coord> toCheck,
+            List<Coord> moves)
+        {
+            toCheck.Enqueue(fromCell);
+            moves.Clear();
+            while (toCheck.Count > 0)
+            {
+                Coord currentFrom = toCheck.Dequeue();
+                moves.Add(currentFrom);
+
+                if (moves.LastOrDefault() == toCell)
+                {
+                    return true;
+                }
+
+                TryAddAvailableJump(board, currentFrom, row, column, canJump, toCheck);
+            }
+
+            return false;
+        }
+
+        protected bool FindMove(
+            BoardCellType[,] board,
+            Coord fromCell,
+            Coord toCell,
+            int row,
+            int column,
+            List<Coord> canJump,
+            List<Coord> moves)
+        {
+            TryAddAvailableMove(board, fromCell, row, column, canJump);
+            if (canJump.LastOrDefault() == toCell)
+            {
+                moves.Clear();
+                moves.Add(fromCell);
+                moves.Add(toCell);
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -25,32 +25,6 @@ namespace Core.MVC
             SetModel(model);
         }
 
-        public void SetModel(TModel model)
-        {
-            _model = model;
-            _hasModel = true;
-            OnSetModel();
-        }
-
-        public void RemoveModel()
-        {
-            _hasModel = false;
-            OnRemoveModel();
-        }
-
-        public void SetView(TView view)
-        {
-            _view = view;
-            _hasView = true;
-            OnViewAdded();
-        }
-
-        public void RemoveView()
-        {
-            _hasView = false;
-            OnViewRemoved();
-        }
-
         public virtual void SetShown(bool isShown)
         {
             _isShown = isShown;
@@ -81,5 +55,31 @@ namespace Core.MVC
 
         protected virtual void OnDispose()
         { }
+
+        private void SetModel(TModel model)
+        {
+            _model = model;
+            _hasModel = true;
+            OnSetModel();
+        }
+
+        private void RemoveModel()
+        {
+            _hasModel = false;
+            OnRemoveModel();
+        }
+
+        private void SetView(TView view)
+        {
+            _view = view;
+            _hasView = true;
+            OnViewAdded();
+        }
+
+        private void RemoveView()
+        {
+            _hasView = false;
+            OnViewRemoved();
+        }
     }
 }

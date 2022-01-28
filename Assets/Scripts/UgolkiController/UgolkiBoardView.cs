@@ -224,17 +224,18 @@ namespace UgolkiController
             SetCellHighlightShown(false);
         }
 
-        void IUgolkiExternalView.MovePiece(List<Move> path, Action onComplete)
+        void IUgolkiExternalView.MovePiece(List<Coord> moves, Action onComplete)
         {
             //TODO: add animation
 
-            Move move = path[0];
-            GameObject piece = _board[move.From.Row][move.From.Column];
-            piece.transform.localPosition = new Vector3(move.To.Row, 0.0f, move.To.Column);
+            Coord pieceCell = moves[0];
+            Coord move = moves[moves.Count - 1];
+            GameObject piece = _board[pieceCell.Row][pieceCell.Column];
+            piece.transform.localPosition = new Vector3(move.Row, 0.0f, move.Column);
             SetCellHighlightShown(false);
 
-            _board[move.From.Row][move.From.Column] = null;
-            _board[move.To.Row][move.To.Column] = piece;
+            _board[move.Row][move.Column] = null;
+            _board[move.Row][move.Column] = piece;
             onComplete?.Invoke();
         }
 
