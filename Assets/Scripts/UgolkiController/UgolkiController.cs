@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Tools;
+using Tools.GraphSearch;
 using UgolkiController.UgolkiRules;
 
 namespace UgolkiController
@@ -26,41 +28,8 @@ namespace UgolkiController
         private CanJumpOrthogonallyRule _canJumpOrthogonallyRule = new CanJumpOrthogonallyRule();
         private CanJumpDiagonallyRule _canJumpDiagonallyRule = new CanJumpDiagonallyRule();
 
-        private BoardCellType[,] _testBoard =
-        {
-            {
-                BoardCellType.White, BoardCellType.White, BoardCellType.Empty, BoardCellType.White, BoardCellType.Empty,
-                BoardCellType.White, BoardCellType.Empty, BoardCellType.Empty
-            },
-            {
-                BoardCellType.White, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
-                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty
-            },
-            {
-                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
-                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty
-            },
-            {
-                BoardCellType.White, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
-                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty
-            },
-            {
-                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
-                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty
-            },
-            {
-                BoardCellType.White, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
-                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty
-            },
-            {
-                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
-                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty
-            },
-            {
-                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Empty,
-                BoardCellType.Empty, BoardCellType.Empty, BoardCellType.Black
-            }
-        };
+        private Dictionary<int, Node<Coord>> _availableMovesGraph = new Dictionary<int, Node<Coord>>();
+        private IGraphSearch _graphSearch = new BellmanFord();
 
         public event Action<Dictionary<Player, int>> MoveInfoChanged;
         public event Action<Player> PlayerChanged;
@@ -211,35 +180,37 @@ namespace UgolkiController
 
         private void ResetBoard()
         {
-            _board = _testBoard;
-
-            // for (int i = 0; i < _boardSize; i++)
-            // {
-            //     for (int j = 0; j < _boardSize; j++)
-            //     {
-            //         if (i <= _whiteHousePosition && j <= _whiteHousePosition)
-            //         {
-            //             _board[i, j] = BoardCellType.White;
-            //         }
-            //         else if (i >= _blackHousePosition && j >= _blackHousePosition)
-            //         {
-            //             _board[i, j] = BoardCellType.Black;
-            //         }
-            //         else
-            //         {
-            //             _board[i, j] = BoardCellType.Empty;
-            //         }
-            //     }
-            // }
+            for (int i = 0; i < _boardSize; i++)
+            {
+                for (int j = 0; j < _boardSize; j++)
+                {
+                    if (i <= _whiteHousePosition && j <= _whiteHousePosition)
+                    {
+                        _board[i, j] = BoardCellType.White;
+                    }
+                    else if (i >= _blackHousePosition && j >= _blackHousePosition)
+                    {
+                        _board[i, j] = BoardCellType.Black;
+                    }
+                    else
+                    {
+                        _board[i, j] = BoardCellType.Empty;
+                    }
+                }
+            }
         }
 
         private List<Coord> GetAvailableMoves(Coord fromCell)
         {
             Queue<Coord> toCheck = new Queue<Coord>();
             List<Coord> canJump = new List<Coord> {fromCell};
+            Node<Coord> fromNode = new Node<Coord>(0, fromCell);
+            _availableMovesGraph.Clear();
+            _availableMovesGraph.Add(fromNode.Id, fromNode);
             toCheck.Enqueue(fromCell);
 
-            _availableMovesByRule[_currentRule].TryAddAvailableMoves(_board, fromCell, toCheck, canJump);
+            _availableMovesByRule[_currentRule]
+                .TryAddAvailableMoves(_board, fromCell, _availableMovesGraph, toCheck, canJump);
 
             canJump.Remove(fromCell);
             return canJump;
@@ -267,7 +238,31 @@ namespace UgolkiController
 
             _hasSelectedPiece = false;
 
-            List<Coord> moves = _availableMovesByRule[_currentRule].FindMoves(_board, _selectedPiecePosition, cell);
+            List<Coord> moves = new List<Coord>();
+
+            int sourceIndex = 0;
+            int destinationIndex = 0;
+
+            //TODO optimize this
+            foreach (Node<Coord> value in _availableMovesGraph.Values)
+            {
+                if (value.Value == _selectedPiecePosition)
+                {
+                    sourceIndex = value.Id;
+                }
+
+                if (value.Value == cell)
+                {
+                    destinationIndex = value.Id;
+                }
+            }
+
+            List<int> shortestPath = _graphSearch.GetPath(_availableMovesGraph, sourceIndex, destinationIndex);
+
+            for (int i = shortestPath.Count - 1; i >= 0; i--)
+            {
+                moves.Add(_availableMovesGraph[shortestPath[i]].Value);
+            }
 
             _board[cell.Row, cell.Column] = resultCellType;
 

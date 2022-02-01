@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Core.Managers.PoolingManager;
 using Core.Managers.ViewManager;
@@ -207,6 +208,34 @@ namespace UgolkiController
             _cellHighlight.gameObject.SetActive(isShown);
         }
 
+        private void OnPieceMoveComplete(List<Coord> moves, Action onComplete)
+        {
+            Coord sourceCell = moves[0];
+            Coord destinationCell = moves[moves.Count - 1];
+
+            GameObject piece = _board[sourceCell.Row][sourceCell.Column];
+
+            _board[sourceCell.Row][sourceCell.Column] = null;
+            _board[destinationCell.Row][destinationCell.Column] = piece;
+
+            onComplete?.Invoke();
+        }
+
+        private IEnumerator PieceMoveAnimation(List<Coord> moves, Action onComplete)
+        {
+            Coord sourceCell = moves[0];
+            GameObject piece = _board[sourceCell.Row][sourceCell.Column];
+
+            //TODO add animations
+            for (int i = 1; i < moves.Count; i++)
+            {
+                piece.transform.localPosition = new Vector3(moves[i].Row, 0.0f, moves[i].Column);
+                yield return new WaitForSeconds(0.2f);
+            }
+
+            OnPieceMoveComplete(moves, onComplete);
+        }
+
         void IUgolkiExternalView.EndGame(BoardCellType[,] board)
         {
             ClearBoard();
@@ -226,17 +255,8 @@ namespace UgolkiController
 
         void IUgolkiExternalView.MovePiece(List<Coord> moves, Action onComplete)
         {
-            //TODO: add animation
-
-            Coord pieceCell = moves[0];
-            Coord move = moves[moves.Count - 1];
-            GameObject piece = _board[pieceCell.Row][pieceCell.Column];
-            piece.transform.localPosition = new Vector3(move.Row, 0.0f, move.Column);
             SetCellHighlightShown(false);
-
-            _board[move.Row][move.Column] = null;
-            _board[move.Row][move.Column] = piece;
-            onComplete?.Invoke();
+            StartCoroutine(PieceMoveAnimation(moves, onComplete));
         }
 
         void IUgolkiExternalView.ShowMessage(string message)
