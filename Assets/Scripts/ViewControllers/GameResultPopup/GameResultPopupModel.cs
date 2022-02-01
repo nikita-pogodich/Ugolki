@@ -1,16 +1,16 @@
 using System;
-using Core.MVC;
 using UgolkiController;
 
 namespace ViewControllers.GameResultPopup
 {
-    public class GameResultPopupModel : ViewModel
+    public class GameResultPopupModel : IGameResultPopupModel
     {
         private Player _player;
 
         public Player Player => _player;
-        public event Action Restart;
-        public event Action BackToMenu;
+        public event Action<Player> PlayerInfoChanged;
+        private event Action Restart;
+        private event Action BackToMenu;
 
         public GameResultPopupModel()
         { }
@@ -25,6 +25,8 @@ namespace ViewControllers.GameResultPopup
             _player = player;
             Restart = restart;
             BackToMenu = exit;
+
+            PlayerInfoChanged?.Invoke(player);
         }
 
         public void OnRestart()

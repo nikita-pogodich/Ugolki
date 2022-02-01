@@ -1,11 +1,12 @@
 using System;
+using Core.MVC;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace ViewControllers.MainMenu.UgolkiRulesListItem
 {
-    public class UgolkiRulesListItemView : MonoBehaviour
+    public class UgolkiRulesListItemView : BaseView, IUgolkiRulesListItemView
     {
         [SerializeField]
         private TextMeshProUGUI _title;
@@ -16,6 +17,7 @@ namespace ViewControllers.MainMenu.UgolkiRulesListItem
         [SerializeField]
         private CanvasGroup _selectedBackground;
 
+        public GameObject ItemView => gameObject;
         public event Action Selected;
 
         public void OnSelected()

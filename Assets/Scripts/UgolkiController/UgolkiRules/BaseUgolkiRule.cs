@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Tools;
 
 namespace UgolkiController.UgolkiRules
 {
@@ -6,7 +7,8 @@ namespace UgolkiController.UgolkiRules
     {
         public abstract void TryAddAvailableMoves(
             BoardCellType[,] board,
-            Coord from,
+            Coord fromCell,
+            Dictionary<int, Node<Coord>> graph,
             Queue<Coord> toCheck,
             List<Coord> canJump);
 
@@ -15,16 +17,17 @@ namespace UgolkiController.UgolkiRules
             Coord currentFrom,
             int row,
             int column,
+            Dictionary<int, Node<Coord>> graph,
             List<Coord> canJump,
             Queue<Coord> toCheck)
         {
             Coord currentTo;
-            Coord currentTo2;
+            Coord currentToJump;
 
             try
             {
                 currentTo = new Coord(currentFrom.Row + row, currentFrom.Column + column);
-                currentTo2 = new Coord(currentFrom.Row + row * 2, currentFrom.Column + column * 2);
+                currentToJump = new Coord(currentFrom.Row + row * 2, currentFrom.Column + column * 2);
             }
             catch (OutOfBoardException)
             {
@@ -32,11 +35,41 @@ namespace UgolkiController.UgolkiRules
             }
 
             if (board[currentTo.Row, currentTo.Column] != BoardCellType.Empty &&
-                board[currentTo2.Row, currentTo2.Column] == BoardCellType.Empty &&
-                canJump.Contains(currentTo2) == false)
+                board[currentToJump.Row, currentToJump.Column] == BoardCellType.Empty &&
+                canJump.Contains(currentToJump) == false)
             {
-                toCheck.Enqueue(currentTo2);
-                canJump.Add(currentTo2);
+                toCheck.Enqueue(currentToJump);
+                canJump.Add(currentToJump);
+
+                Node<Coord> toJumpNode = null;
+
+                //TODO optimize this
+                foreach (Node<Coord> graphValue in graph.Values)
+                {
+                    if (graphValue.Value == currentToJump)
+                    {
+                        toJumpNode = graphValue;
+                        break;
+                    }
+                }
+
+                if (toJumpNode == null)
+                {
+                    toJumpNode = new Node<Coord>(graph.Count, currentToJump);
+                    graph.Add(toJumpNode.Id, toJumpNode);
+                }
+
+                Node<Coord> fromNode = null;
+
+                foreach (Node<Coord> graphValue in graph.Values)
+                {
+                    if (graphValue.Value == currentFrom)
+                    {
+                        fromNode = graphValue;
+                    }
+                }
+
+                fromNode?.AddEdge(toJumpNode.Id);
             }
         }
 
@@ -57,6 +90,16 @@ namespace UgolkiController.UgolkiRules
                 canJump.Contains(currentTo) == false)
             {
                 canJump.Add(currentTo);
+            }
+        }
+
+        protected void FillGraphMoves(Dictionary<int, Node<Coord>> graph, List<Coord> canJump)
+        {
+            for (int i = 1; i < canJump.Count; i++)
+            {
+                Node<Coord> value = new Node<Coord>(graph.Count, canJump[i]);
+                graph[0].AddEdge(value.Id);
+                graph.Add(graph.Count, value);
             }
         }
     }

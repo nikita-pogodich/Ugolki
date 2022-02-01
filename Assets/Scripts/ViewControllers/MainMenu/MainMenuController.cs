@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Core.Managers.LocalizationManager;
-using Core.Managers.PoolingManager;
 using Core.Managers.ViewManager;
 using Core.MVC;
 using Settings;
@@ -10,40 +9,43 @@ using ViewControllers.MainMenu.UgolkiRulesList;
 
 namespace ViewControllers.MainMenu
 {
-    public class MainMenuViewController : BaseViewController<MainMenuView, ViewModel>
+    public class MainMenuController : BaseController<IMainMenuView, IMainMenuModel>, IMainMenuController
     {
         private IViewManager _viewManager;
         private IUgolkiController _ugolkiController;
-        private List<string> _ugolkiRules;
-
-        private UgolkiRulesListViewController _ugolkiRulesList;
+        private IUgolkiRulesListController _ugolkiRulesList;
 
         public override ViewType ViewType => ViewType.Window;
         public override string Name => ViewNamesList.MainMenu;
 
-        public MainMenuViewController(
+        public MainMenuController(
             IViewManager viewManager,
             IUgolkiController ugolkiController,
-            IPoolingManager poolingManager,
-            ILocalizationManager localizationManager)
+            IViewFactory viewFactory,
+            ILocalizationManager localizationManager,
+            IMainMenuView view,
+            IMainMenuModel model = null) : base(view, model)
         {
             _viewManager = viewManager;
             _ugolkiController = ugolkiController;
-            _ugolkiRulesList = new UgolkiRulesListViewController(poolingManager, localizationManager);
-        }
 
-        protected override void OnViewAdded()
-        {
-            this.View.StartGame += OnStartGame;
-            this.View.ExitGame += OnExitGame;
+            List<string> ugolkiRules = _ugolkiController.GetRules();
+            IUgolkiRulesListModel ugolkiRulesListModel = new UgolkiRulesListModel(ugolkiRules);
+
+            _ugolkiRulesList = new UgolkiRulesListController(
+                view.UgolkiRulesList,
+                ugolkiRulesListModel,
+                viewFactory,
+                localizationManager);
+
+            view.StartGame += OnStartGame;
+            view.ExitGame += OnExitGame;
             _ugolkiRulesList.RuleSelected += OnRuleSelected;
 
-            _ugolkiRules = _ugolkiController.GetRules();
-            _ugolkiRulesList.SetModel(_ugolkiRules);
-            _ugolkiRulesList.SetView(this.View.UgolkiRulesList);
+            _ugolkiRulesList.SelectDefaultRule();
         }
 
-        protected override void OnViewRemoved()
+        protected override void OnDispose()
         {
             this.View.StartGame -= OnStartGame;
             this.View.ExitGame -= OnExitGame;

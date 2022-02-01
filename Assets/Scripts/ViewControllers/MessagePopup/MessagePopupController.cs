@@ -6,16 +6,23 @@ using Settings.LocalizationKeys;
 
 namespace ViewControllers.MessagePopup
 {
-    public class MessagePopupViewController : BaseViewController<MessagePopupView, ViewModel>
+    public class MessagePopupController :
+        BaseController<IMessagePopupView, IMessagePopupModel>,
+        IMessagePopupController
     {
         private ILocalizationManager _localizationManager;
 
         public override ViewType ViewType => ViewType.Popup;
         public override string Name => ViewNamesList.MessagePopup;
 
-        public MessagePopupViewController(ILocalizationManager localizationManager)
+        public MessagePopupController(
+            IMessagePopupView view,
+            IMessagePopupModel model,
+            ILocalizationManager localizationManager) : base(view, model)
         {
             _localizationManager = localizationManager;
+            OnMessageKeyChanged(this.Model.MessageKey);
+            this.Model.MessageKeyChanged += OnMessageKeyChanged;
         }
 
         protected override void OnSetShown(bool isShown)
@@ -26,20 +33,24 @@ namespace ViewControllers.MessagePopup
             }
         }
 
-        protected override void OnSetModel()
+        protected override void OnDispose()
         {
-            MessagePopupModel model = this.Model as MessagePopupModel;
-            if (model == null)
+            this.Model.MessageKeyChanged -= OnMessageKeyChanged;
+        }
+
+        private void OnMessageKeyChanged(string messageKey)
+        {
+            if (string.IsNullOrEmpty(messageKey) == true)
             {
                 return;
             }
 
             bool hasMessage =
-                MessagePopupLocalizationKeys.UgolkiMessagesMap.TryGetValue(model.MessageKey, out string result);
+                MessagePopupLocalizationKeys.UgolkiMessagesMap.TryGetValue(messageKey, out string result);
 
             if (hasMessage == false)
             {
-                LogManager.LogWarning($"Message not found: " + model.MessageKey);
+                LogManager.LogWarning($"Message not found: " + messageKey);
                 return;
             }
 

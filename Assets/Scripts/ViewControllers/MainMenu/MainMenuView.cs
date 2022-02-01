@@ -1,11 +1,12 @@
 using System;
+using Core.MVC;
 using UnityEngine;
 using UnityEngine.UI;
 using ViewControllers.MainMenu.UgolkiRulesList;
 
 namespace ViewControllers.MainMenu
 {
-    public class MainMenuView : MonoBehaviour
+    public class MainMenuView : BaseView, IMainMenuView
     {
         [SerializeField]
         private UgolkiRulesListView _ugolkiRulesList;
@@ -22,7 +23,7 @@ namespace ViewControllers.MainMenu
         public event Action StartGame;
         public event Action ExitGame;
 
-        public UgolkiRulesListView UgolkiRulesList => _ugolkiRulesList;
+        public IUgolkiRulesListView UgolkiRulesList => _ugolkiRulesList;
 
         public void SetShown(bool isShown)
         {

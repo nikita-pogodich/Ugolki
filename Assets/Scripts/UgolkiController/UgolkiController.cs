@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Tools;
+using Tools.GraphSearch;
 using UgolkiController.UgolkiRules;
 
 namespace UgolkiController
@@ -22,12 +24,15 @@ namespace UgolkiController
         private bool _hasSelectedPiece;
         private List<Coord> _currentAvailableMoves = new List<Coord>();
 
-        public event Action<Dictionary<Player, int>> MoveInfoChanged;
-        public event Action<Player> PlayerChanged;
-
         private CannotJumpRule _cannotJumpRule = new CannotJumpRule();
         private CanJumpOrthogonallyRule _canJumpOrthogonallyRule = new CanJumpOrthogonallyRule();
         private CanJumpDiagonallyRule _canJumpDiagonallyRule = new CanJumpDiagonallyRule();
+
+        private Dictionary<int, Node<Coord>> _availableMovesGraph = new Dictionary<int, Node<Coord>>();
+        private IGraphSearch _graphSearch = new BellmanFord();
+
+        public event Action<Dictionary<Player, int>> MoveInfoChanged;
+        public event Action<Player> PlayerChanged;
 
         public UgolkiController(IUgolkiExternalView ugolkiExternalView)
         {
@@ -195,16 +200,19 @@ namespace UgolkiController
             }
         }
 
-        private List<Coord> GetAvailableMoves(Coord from)
+        private List<Coord> GetAvailableMoves(Coord fromCell)
         {
             Queue<Coord> toCheck = new Queue<Coord>();
-            List<Coord> canJump = new List<Coord>();
-            canJump.Add(from);
-            toCheck.Enqueue(from);
+            List<Coord> canJump = new List<Coord> {fromCell};
+            Node<Coord> fromNode = new Node<Coord>(0, fromCell);
+            _availableMovesGraph.Clear();
+            _availableMovesGraph.Add(fromNode.Id, fromNode);
+            toCheck.Enqueue(fromCell);
 
-            _availableMovesByRule[_currentRule].TryAddAvailableMoves(_board, from, toCheck, canJump);
+            _availableMovesByRule[_currentRule]
+                .TryAddAvailableMoves(_board, fromCell, _availableMovesGraph, toCheck, canJump);
 
-            canJump.Remove(from);
+            canJump.Remove(fromCell);
             return canJump;
         }
 
@@ -229,11 +237,34 @@ namespace UgolkiController
             }
 
             _hasSelectedPiece = false;
-            _board[cell.Row, cell.Column] = resultCellType;
 
-            //TODO: fill moves
-            Move move = new Move {IsJump = false, From = _selectedPiecePosition, To = cell};
-            List<Move> moves = new List<Move> {move};
+            List<Coord> moves = new List<Coord>();
+
+            int sourceIndex = 0;
+            int destinationIndex = 0;
+
+            //TODO optimize this
+            foreach (Node<Coord> value in _availableMovesGraph.Values)
+            {
+                if (value.Value == _selectedPiecePosition)
+                {
+                    sourceIndex = value.Id;
+                }
+
+                if (value.Value == cell)
+                {
+                    destinationIndex = value.Id;
+                }
+            }
+
+            List<int> shortestPath = _graphSearch.GetPath(_availableMovesGraph, sourceIndex, destinationIndex);
+
+            for (int i = shortestPath.Count - 1; i >= 0; i--)
+            {
+                moves.Add(_availableMovesGraph[shortestPath[i]].Value);
+            }
+
+            _board[cell.Row, cell.Column] = resultCellType;
 
             _ugolkiExternalView.MovePiece(moves, OnMoveComplete);
         }

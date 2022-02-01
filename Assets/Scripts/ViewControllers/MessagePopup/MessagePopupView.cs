@@ -1,11 +1,12 @@
 using System;
+using Core.MVC;
 using TMPro;
 using Tools;
 using UnityEngine;
 
 namespace ViewControllers.MessagePopup
 {
-    public class MessagePopupView : MonoBehaviour
+    public class MessagePopupView : BaseView, IMessagePopupView
     {
         [SerializeField]
         private TextMeshProUGUI _messageText;

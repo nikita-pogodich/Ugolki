@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Tools;
 
 namespace UgolkiController.UgolkiRules
 {
@@ -6,10 +7,26 @@ namespace UgolkiController.UgolkiRules
     {
         public override void TryAddAvailableMoves(
             BoardCellType[,] board,
-            Coord from,
+            Coord fromCell,
+            Dictionary<int, Node<Coord>> graph,
             Queue<Coord> toCheck,
             List<Coord> canJump)
         {
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    if (i == 0 && j == 0)
+                    {
+                        continue;
+                    }
+
+                    TryAddAvailableMove(board, fromCell, i, j, canJump);
+                }
+            }
+
+            FillGraphMoves(graph, canJump);
+
             while (toCheck.Count > 0)
             {
                 Coord currentFrom = toCheck.Dequeue();
@@ -23,21 +40,8 @@ namespace UgolkiController.UgolkiRules
                             continue;
                         }
 
-                        TryAddAvailableJump(board, currentFrom, i, j, canJump, toCheck);
+                        TryAddAvailableJump(board, currentFrom, i, j, graph, canJump, toCheck);
                     }
-                }
-            }
-
-            for (int i = -1; i <= 1; i++)
-            {
-                for (int j = -1; j <= 1; j++)
-                {
-                    if (i == 0 && j == 0)
-                    {
-                        continue;
-                    }
-
-                    TryAddAvailableMove(board, from, i, j, canJump);
                 }
             }
         }

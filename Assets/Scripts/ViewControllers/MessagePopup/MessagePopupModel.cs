@@ -1,23 +1,24 @@
-using Core.MVC;
+using System;
 
 namespace ViewControllers.MessagePopup
 {
-    public class MessagePopupModel : ViewModel
+    public class MessagePopupModel : IMessagePopupModel
     {
-        private string _messageKey;
-        public string MessageKey => _messageKey;
+        public string MessageKey { get; }
+
+        public event Action<string> MessageKeyChanged;
 
         public MessagePopupModel()
         { }
 
         public MessagePopupModel(string messageKey)
         {
-            UpdateModel(messageKey);
+            MessageKey = messageKey;
         }
 
-        public void UpdateModel(string messageKey)
+        public void UpdateMessageKey(string messageKey)
         {
-            _messageKey = messageKey;
+            MessageKeyChanged?.Invoke(messageKey);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Core.Managers.PoolingManager;
 using Core.Managers.ViewManager;
@@ -32,20 +33,24 @@ namespace UgolkiController
         private IPoolingManager _poolingManager;
         private IUgolkiController _ugolkiController;
         private IViewManager _viewManager;
+        private IMessagePopupModel _messagePopupModel;
+        private IGameResultPopupModel _gameResultPopupModel;
         private List<List<GameObject>> _board = new List<List<GameObject>>();
         private int _boardSize;
         private bool _isGameStarted;
-        private MessagePopupModel _messagePopupModel = new MessagePopupModel();
-        private GameResultPopupModel _gameResultPopupModel = new GameResultPopupModel();
 
         public void Initialize(
             IPoolingManager poolingManager,
             IUgolkiController ugolkiController,
-            IViewManager viewManager)
+            IViewManager viewManager,
+            IMessagePopupModel messagePopupModel,
+            IGameResultPopupModel gameResultPopupModel)
         {
             _poolingManager = poolingManager;
             _ugolkiController = ugolkiController;
             _viewManager = viewManager;
+            _messagePopupModel = messagePopupModel;
+            _gameResultPopupModel = gameResultPopupModel;
         }
 
         private void Update()
@@ -183,7 +188,7 @@ namespace UgolkiController
             _isGameStarted = false;
 
             _gameResultPopupModel.UpdateModel(winner.Value, OnRestart, OnBackToMenu);
-            _viewManager.ShowView(ViewNamesList.GameResultPopup, _gameResultPopupModel);
+            _viewManager.ShowView(ViewNamesList.GameResultPopup);
         }
 
         private void OnRestart()
@@ -203,6 +208,34 @@ namespace UgolkiController
             _cellHighlight.gameObject.SetActive(isShown);
         }
 
+        private void OnPieceMoveComplete(List<Coord> moves, Action onComplete)
+        {
+            Coord sourceCell = moves[0];
+            Coord destinationCell = moves[moves.Count - 1];
+
+            GameObject piece = _board[sourceCell.Row][sourceCell.Column];
+
+            _board[sourceCell.Row][sourceCell.Column] = null;
+            _board[destinationCell.Row][destinationCell.Column] = piece;
+
+            onComplete?.Invoke();
+        }
+
+        private IEnumerator PieceMoveAnimation(List<Coord> moves, Action onComplete)
+        {
+            Coord sourceCell = moves[0];
+            GameObject piece = _board[sourceCell.Row][sourceCell.Column];
+
+            //TODO add animations
+            for (int i = 1; i < moves.Count; i++)
+            {
+                piece.transform.localPosition = new Vector3(moves[i].Row, 0.0f, moves[i].Column);
+                yield return new WaitForSeconds(0.2f);
+            }
+
+            OnPieceMoveComplete(moves, onComplete);
+        }
+
         void IUgolkiExternalView.EndGame(BoardCellType[,] board)
         {
             ClearBoard();
@@ -220,24 +253,16 @@ namespace UgolkiController
             SetCellHighlightShown(false);
         }
 
-        void IUgolkiExternalView.MovePiece(List<Move> path, Action onComplete)
+        void IUgolkiExternalView.MovePiece(List<Coord> moves, Action onComplete)
         {
-            //TODO: add animation
-
-            Move move = path[0];
-            GameObject piece = _board[move.From.Row][move.From.Column];
-            piece.transform.localPosition = new Vector3(move.To.Row, 0.0f, move.To.Column);
             SetCellHighlightShown(false);
-
-            _board[move.From.Row][move.From.Column] = null;
-            _board[move.To.Row][move.To.Column] = piece;
-            onComplete?.Invoke();
+            StartCoroutine(PieceMoveAnimation(moves, onComplete));
         }
 
         void IUgolkiExternalView.ShowMessage(string message)
         {
-            _messagePopupModel.UpdateModel(message);
-            _viewManager.ShowView(ViewNamesList.MessagePopup, _messagePopupModel);
+            _messagePopupModel.UpdateMessageKey(message);
+            _viewManager.ShowView(ViewNamesList.MessagePopup);
         }
     }
 }

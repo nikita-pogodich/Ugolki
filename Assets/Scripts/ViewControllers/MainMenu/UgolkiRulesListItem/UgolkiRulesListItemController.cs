@@ -5,16 +5,26 @@ using Settings.LocalizationKeys;
 
 namespace ViewControllers.MainMenu.UgolkiRulesListItem
 {
-    public class UgolkiRulesListItemViewController : BaseViewController<UgolkiRulesListItemView, string>
+    public class UgolkiRulesListItemController :
+        BaseController<IUgolkiRulesListItemView, IUgolkiRulesListItemModel>,
+        IUgolkiRulesListItemController
     {
         private ILocalizationManager _localizationManager;
         private bool _isSelected;
 
-        public event Action<UgolkiRulesListItemViewController> Selected;
+        public event Action<IUgolkiRulesListItemController> Selected;
 
-        public UgolkiRulesListItemViewController(ILocalizationManager localizationManager)
+        public UgolkiRulesListItemController(
+            IUgolkiRulesListItemView view,
+            IUgolkiRulesListItemModel model,
+            ILocalizationManager localizationManager)
+            : base(view, model)
         {
             _localizationManager = localizationManager;
+            view.Selected += OnSelected;
+            model.RuleKeyChanged += OnSetRuleKeyChanged;
+
+            OnSetRuleKeyChanged(model.RuleKey);
         }
 
         public void SetSelected(bool isSelected)
@@ -26,40 +36,19 @@ namespace ViewControllers.MainMenu.UgolkiRulesListItem
 
         public void OnLocalizationChanged()
         {
-            UpdateController();
+            OnSetRuleKeyChanged(this.Model.RuleKey);
         }
 
-        protected override void OnSetModel()
-        {
-            UpdateController();
-        }
-
-        protected override void OnViewAdded()
-        {
-            UpdateController();
-
-            this.View.Selected += OnSelected;
-        }
-
-        protected override void OnViewRemoved()
+        protected override void OnDispose()
         {
             this.View.Selected -= OnSelected;
+            this.Model.RuleKeyChanged += OnSetRuleKeyChanged;
         }
 
-        private void UpdateController()
-        {
-            if (this.HasModel == false || this.HasView == false)
-            {
-                return;
-            }
-
-            SetTitle();
-        }
-
-        private void SetTitle()
+        private void OnSetRuleKeyChanged(string ruleKey)
         {
             bool ruleHasLocalizationKey =
-                MainMenuLocalizationKeys.UgolkiRulesMap.TryGetValue(this.Model, out string titleKey);
+                MainMenuLocalizationKeys.UgolkiRulesMap.TryGetValue(ruleKey, out string titleKey);
             if (ruleHasLocalizationKey == false)
             {
                 return;
