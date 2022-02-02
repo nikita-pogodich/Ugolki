@@ -42,6 +42,11 @@ namespace UgolkiController
             return _row * 8 + _column;
         }
 
+        public double Magnitude()
+        {
+            return Math.Sqrt(_row * _row + _column * _column);
+        }
+
         public static bool operator ==(Coord coord1, Coord coord2)
         {
             return coord1.Equals(coord2);
@@ -50,6 +55,11 @@ namespace UgolkiController
         public static bool operator !=(Coord coord1, Coord coord2)
         {
             return !coord1.Equals(coord2);
+        }
+
+        public static Coord operator -(Coord coord1, Coord coord2)
+        {
+            return new Coord(coord1.Row - coord2.Row, coord1.Column - coord2.Column);
         }
     }
 }

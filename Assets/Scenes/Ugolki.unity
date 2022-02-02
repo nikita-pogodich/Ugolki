@@ -776,6 +776,9 @@ MonoBehaviour:
   _boardCollider: {fileID: 580643999}
   _cellSize: 1
   _boardTag: Board
+  _pieceMoveEasing: 12
+  _pieceMoveDuration: 0.4
+  _jumpHeight: 0.5
 --- !u!4 &492343925
 Transform:
   m_ObjectHideFlags: 0
