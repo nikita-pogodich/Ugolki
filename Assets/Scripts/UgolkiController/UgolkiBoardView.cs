@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Core.Managers.PoolingManager;
 using Core.Managers.ViewManager;
+using DG.Tweening;
 using Settings;
 using UnityEngine;
 using ViewControllers.GameResultPopup;
@@ -12,6 +13,8 @@ namespace UgolkiController
 {
     public class UgolkiBoardView : MonoBehaviour, IUgolkiExternalView
     {
+        private const double _jumpMinDistance = 2.0;
+
         [SerializeField]
         private Transform _piecesRoot;
 
@@ -30,6 +33,15 @@ namespace UgolkiController
         [SerializeField]
         private string _boardTag;
 
+        [SerializeField]
+        private Ease _pieceMoveEasing = Ease.OutExpo;
+
+        [SerializeField]
+        private float _pieceMoveDuration = 0.2f;
+
+        [SerializeField]
+        private float _jumpHeight = 1.0f;
+
         private IPoolingManager _poolingManager;
         private IUgolkiController _ugolkiController;
         private IViewManager _viewManager;
@@ -38,6 +50,8 @@ namespace UgolkiController
         private List<List<GameObject>> _board = new List<List<GameObject>>();
         private int _boardSize;
         private bool _isGameStarted;
+
+        private Sequence _animation;
 
         public void Initialize(
             IPoolingManager poolingManager,
@@ -221,19 +235,42 @@ namespace UgolkiController
             onComplete?.Invoke();
         }
 
-        private IEnumerator PieceMoveAnimation(List<Coord> moves, Action onComplete)
+        private void PieceMoveAnimation(List<Coord> moves, Action onComplete)
         {
+            _animation?.Kill();
+            _animation = DOTween.Sequence();
+
             Coord sourceCell = moves[0];
             GameObject piece = _board[sourceCell.Row][sourceCell.Column];
 
-            //TODO add animations
             for (int i = 1; i < moves.Count; i++)
             {
-                piece.transform.localPosition = new Vector3(moves[i].Row, 0.0f, moves[i].Column);
-                yield return new WaitForSeconds(0.2f);
+                float jumpHeight = 0.0f;
+                int jumps = 0;
+
+                int moveDirectionRow = Math.Abs(sourceCell.Row - moves[i].Row);
+                int moveDirectionColumn = Math.Abs(sourceCell.Column - moves[i].Column);
+                Coord moveDirection = new Coord(moveDirectionRow, moveDirectionColumn);
+
+                double moveMagnitude = moveDirection.Magnitude();
+                if (moveMagnitude >= _jumpMinDistance)
+                {
+                    jumpHeight = _jumpHeight;
+                    jumps = 1;
+                }
+
+                Vector3 destinationPosition = new Vector3(moves[i].Row, 0.0f, moves[i].Column);
+                Sequence pieceMove = piece.transform
+                    .DOLocalJump(destinationPosition, jumpHeight, jumps, _pieceMoveDuration)
+                    .SetEase(_pieceMoveEasing);
+
+                _animation.Append(pieceMove).OnComplete(OnAnimationComplete);
             }
 
-            OnPieceMoveComplete(moves, onComplete);
+            void OnAnimationComplete()
+            {
+                OnPieceMoveComplete(moves, onComplete);
+            }
         }
 
         void IUgolkiExternalView.EndGame(BoardCellType[,] board)
@@ -256,7 +293,7 @@ namespace UgolkiController
         void IUgolkiExternalView.MovePiece(List<Coord> moves, Action onComplete)
         {
             SetCellHighlightShown(false);
-            StartCoroutine(PieceMoveAnimation(moves, onComplete));
+            PieceMoveAnimation(moves, onComplete);
         }
 
         void IUgolkiExternalView.ShowMessage(string message)
